@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"name": "esp32-master-controll-water-follow",
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"iostream": "cpp",
+			"array": "cpp",
+			"*.tcc": "cpp",
+			"istream": "cpp",
+			"tuple": "cpp",
+			"utility": "cpp",
+			"ds1307rtc.h": "c",
+			"thread": "cpp"
+		}
+	}
+}
