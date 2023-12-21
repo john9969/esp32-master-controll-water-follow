@@ -44,7 +44,7 @@ public:
         this->_serial->print(_data);
     }
     int read(){
-        
+        return 0;
     }
 private:
     HardwareSerial* _serial;

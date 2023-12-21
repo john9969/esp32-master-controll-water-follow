@@ -1,51 +1,76 @@
+#include <Arduino.h>
 #include "board/rtc.h"
 #include <iostream>
 #include <chrono>
 #include <thread>
 class Alarm {
 private:
-    Time alarmTime;
+    static Alarm* _alarm;
+    int remainTime;
+    Time nextTime;
+    bool isRinging;
+    bool checked;
     int frequencyPerHour;
     bool alarmSet;
-
-    Alarm() : frequencyPerHour(1), alarmSet(false) {}
-
+    uint32_t totalSecond;
+    std::thread threadAlarm;
+    Alarm() : frequencyPerHour(1), alarmSet(false),isRinging(false),checked(false),totalSecond(0) {
+        threadAlarm = std::thread(&Alarm::runAlarm,this, this);
+        _alarm = this;
+    }
+    void ringAlarm() const {
+        Time currentTime;
+        std::cout << "Alarm ringing at " << nextTime.Hour << ":"
+                  << nextTime.Minute << ":" << nextTime.Second << std::endl;
+    }
 public:
-    static Alarm& getInstance() {
-        static Alarm instance; // Guaranteed to be destroyed and instantiated on first use.
-        return instance;
+    void joinThread(){
+        if(this->threadAlarm.joinable())
+            this->threadAlarm.join();
+    }
+    static Alarm* getInstance() {
+        if(!_alarm){
+            _alarm = new Alarm();
+        }
+        return _alarm;
     }
 
     // Set the alarm time
-    void setTime(const Time& time) {
-        alarmTime = time;
+    void setAlarm(const Time& time) {
+        nextTime = time;
         alarmSet = true;
     }
-    void getTime(Time& time) const {
-        time = alarmTime;
+    int getRemainTime() const {
+        return this->remainTime;
     }
-
-    // Set the alarm with a specified frequency (default is 1 per hour)
-    void setAlarm(const Time& time, int frequencyPerHour = 1) {
-        setTime(time);
-        this->frequencyPerHour = frequencyPerHour;
-    }
-
     // Start the alarm, ringing per hour based on the set time and frequency
-    void startAlarm() {
-        while (alarmSet) {
-            std::this_thread::sleep_for(std::chrono::hours(1 / frequencyPerHour));
-            ringAlarm();
+    void runAlarm(void* _arg) {
+        Alarm* self = (Alarm*)_arg;
+        //Alarm* self = Alarm::getInstance();
+        Rtc* rtc = Rtc::getRtc();
+        
+        while (1) {
+            if(self->isRinging){
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                continue;
+            }
+            Time current;
+            rtc->getTime(current);
+            int value = self->nextTime.Minute - current.Minute;
+            if(value == 0){
+                if(self->nextTime.Second == current.Second){
+                    self->isRinging = true;
+                }   
+            }
+            else if(value > 0)  {
+                self->remainTime = value;
+            }
+            else{
+                self->remainTime = (value + 60);
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
-
-private:
-    // Private method to simulate the alarm ringing
-    void ringAlarm() const {
-        Time currentTime;
-        getTime(currentTime);
-
-        std::cout << "Alarm ringing at " << currentTime.hours << ":"
-                  << currentTime.minutes << ":" << currentTime.seconds << std::endl;
-    }
 };
+Alarm* Alarm::_alarm = nullptr;
+

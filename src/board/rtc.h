@@ -1,62 +1,53 @@
-#ifndef BOARD_UART_H
-#define BOARD_UART_H
+#ifndef BOARD_RTC_H
+#define BOARD_RTC_H
 #include <Arduino.h>
 #include <iostream>
 #include <thread>
 #include <chrono>
 #include "lib/rtc/DS1307RTC.h"
+#define YEAR_OFFSET 1970
 typedef tmElements_t Time;
-#define TOTAL_TIME_1_DAY 86400UL
 class Rtc : public DS1307RTC
 {
-
 private:
-    Rtc(){
-
+    Rtc():current(Time{0,01,10,1,1,1,52}){
+        rtc = this;
+        threadRtc = std::thread(Rtc::run,this);
     }
-    struct Alarm{
-        bool enable;
-        int timeRemain;
-        bool isRingging;
-        bool hasChecked;
-        uint32_t nextTime;
-        int fre;
-    };
-    static Alarm alarm;
     static Rtc* rtc;
-    static Time current;
-    
-    // static 
+    static void* run(void* _arg){
+        Rtc* rtc = (Rtc*) _arg;
+        while(1){
+        Time p_current = rtc->current;
+        rtc->read(p_current);
+        //Serial.println("Time:"+ String(p_current.Hour)+ ":" + String(p_current.Minute) + ":" + String(p_current.Second));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        }
+    }
+    std::thread threadRtc;
+    Time current;
 public:
-    static bool setAlarm(const Time& t, const int& frequencyPerHour = 1){
-        if(rtc == nullptr){
+    
+    static Rtc* getRtc(){
+        if(!rtc){
             rtc = new Rtc();
         }
-        alarm.enable =true;
-        if(t.Minute > current.Minute){
-            alarm.timeRemain = t.Minute - current.Minute + 60* (frequencyPerHour-1);
+        return rtc;
+    }
+    void joinThread(){
+        if(this->threadRtc.joinable()){
+            this->threadRtc.join();
         }
-        else {
-            //alarm.timeRemain = t.Minute - current.Minute + 60+ 60* (frequencyPerHour-1);
-            alarm.timeRemain = t.Minute - current.Minute + 60* frequencyPerHour ; 
-        }
-        current;
-
     }
-    static bool getTime(Time& t){
-        if(rtc == nullptr){
-            rtc = new Rtc();
-        }
-        t = current;  
+    static void getTime(Time& t){
+        Rtc* rtc = Rtc::getRtc();
+        t = rtc->current;  
     }
-    static bool setTime(const Time& t){
-        
+    static void setTime(Time t){
+        Rtc* rtc = Rtc::getRtc();
+        rtc->write(t); 
     }
-    static void run(){
-        DS1307RTC::read(current);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
+   
 };
 Rtc* Rtc::rtc = nullptr;
-Rtc::Alarm Rtc::alarm = Rtc::Alarm{0,0,0,0,0,0};
 #endif
