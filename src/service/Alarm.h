@@ -46,9 +46,7 @@ public:
     // Start the alarm, ringing per hour based on the set time and frequency
     void runAlarm(void* _arg) {
         Alarm* self = (Alarm*)_arg;
-        //Alarm* self = Alarm::getInstance();
-        Rtc* rtc = Rtc::getRtc();
-        
+        Rtc* rtc = Rtc::getRtc();       
         while (1) {
             if(self->isRinging){
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));

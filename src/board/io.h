@@ -1,5 +1,5 @@
 #include <iostream>
-
+#include <vector>
 #include <Arduino.h>
 #define LED                     LED_BUILTIN
 #define LED_SIGNAL              33
@@ -11,23 +11,37 @@
 extern "C"{
     #include <stdbool.h>
     enum ERR_CODE_t{
-        NO_ERR = 0,
         ERR_WIFI_LOST_CONNECT,
         ERR_TIMEOUT_RUNING,
         ERR_SENSOR_FAIL,
         ERR_NON_WATER_SIGNAL
     };
     typedef enum ERR_CODE_t ErrCode;
-    typedef struct Err_t Err;
-    struct Err_t{
-        bool has_err = false;
-        ErrCode errCode = NO_ERR;
-    };
-    Err err;
-    void setErrCode(ErrCode errCode){
-        if(errCode != err.errCode){
-            err.has_err = true;
-            err.errCode = errCode;
+    std::vector<ErrCode> err;
+    int getErrCode(std::vector<ErrCode>& _errCode){
+        _errCode = err;
+        return _errCode.size();
+    }
+    void setErrCode(ErrCode _errCode){
+        int length = err.size();
+        if(length <= 0){
+            err.push_back(_errCode);
+        }
+        else{
+            for(int i = 0; i <length; i++){
+                if(err.at(i) == _errCode) return;
+            }
+            err.push_back(_errCode);
+        }
+    }
+    void removeErrCode(ErrCode _errCode){
+        int length = err.size();
+        if(length <=0) return;
+        for(int i = 0; i< length; i++){
+            if(err.at(i) == _errCode){
+                err.erase(err.begin()+i);
+                break;
+            }
         }
     }
     void setHigh(uint8_t pin);

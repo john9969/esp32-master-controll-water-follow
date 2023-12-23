@@ -51,4 +51,9 @@ private:
     bool isUsingSmartSend;
     int baud;
 };
+extern Uart uartSensor;
+extern Uart uartSlave;
+
+Uart uartSensor(Uart::COM_PORT_SENSOR);
+Uart uartSlave(Uart::COM_PORT_SLAVE);
 #endif // BOART_UART_H

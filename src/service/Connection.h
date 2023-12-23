@@ -9,7 +9,6 @@
 #include "board/dcom.h"
 #define WIFI_ID     "Minh Tuan"
 #define WIFI_PASS   "j12345678"
-const char* hostName ="Trieu Duong 010";
 class Connection
 {
 private:
@@ -44,7 +43,6 @@ Connection* Connection::connection = nullptr;
 void Connection::init(){
     WiFi.mode(WIFI_STA);
     WiFi.begin(WIFI_ID, WIFI_PASS);
-    WiFi.setHostname(hostName);
     WiFi.setAutoConnect(true);
     _isConnected = false;
     
@@ -66,8 +64,10 @@ void Connection::checkingConnection(){
           }
           if(WiFi.status() ==  WL_CONNECTED){
                this->timeoutConnection = millis();
-               if(!_isConnected) _isConnected = true;
-               setErrCode(NO_ERR);
+               if(!_isConnected){
+                    _isConnected = true;
+                    setErrCode(ERR_WIFI_LOST_CONNECT);
+               }
                     
           }
           else{

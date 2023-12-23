@@ -5,7 +5,6 @@
 #define RESET_DCOM_PIN 25
 static void dcomInit();
 static void dcomReset();
-//to reset add it in thread
 void dcomReset(){
     digitalWrite(RESET_DCOM_PIN,HIGH);
     int cout =0;
@@ -16,7 +15,7 @@ void dcomReset(){
         digitalWrite(LED, !digitalRead(LED));
         if(cout>100) break;
     }
-    digitalWrite(LED,HIGH);
+    digitalWrite(LED,LOW);
     digitalWrite(RESET_DCOM_PIN,LOW);
 }
 void dcomInit(){
