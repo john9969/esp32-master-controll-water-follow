@@ -1,10 +1,10 @@
 #include <iostream>
 #include <vector>
-#include "board/io.h"
-#include "board/uart.h"
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include "board/io.h"
+#include "board/uart.h"
 #define TIMEOUT_SENSOR 60000
 #define TIME_CHECKING_SENSOR 700
 class ReadSensor{
@@ -13,6 +13,9 @@ public:
         uint8_t round;
         uint8_t angle;
     };
+    void init(){
+        uartSensor.begin();
+    }
     uint8_t readRound(){
         uint8_t _round = this->dataSensor.round;
         this->dataSensor.round=0;
@@ -86,7 +89,6 @@ private:
         threads.push_back(std::thread(&ReadSensor::process4wire,this));
         threads.push_back(std::thread(&ReadSensor::processBlinkLed,this));
     }
-    ~ReadSensor(){
 
-    }
 };
+std::shared_ptr<ReadSensor> ReadSensor::readSensor = nullptr;

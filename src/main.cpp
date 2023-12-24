@@ -1,24 +1,27 @@
-// #include "board/rtc.h"
-// #include "service/Connection.h"
-// #include "service/Alarm.h"
-#include "app/LogicControll.h"
-//#include "app/ReadSensor.h"
-Uart sensor = Uart(Uart::COM_PORT_SLAVE);
+#include "app/logic_controll.h"
+
 void setup() {
+    
   UART_DEBUG.begin(115200);
-  uartSlave.init();
-  uartSensor.init();
- Alarm * alarm = Alarm::getInstance();
+  std::shared_ptr<ReadSensor> readSensor = ReadSensor::getInstance();
+  std::shared_ptr<LogicControl> logicControl = LogicControl::getInstance();
+  std::shared_ptr<Lcd> lcd = Lcd::getInstance();
+  Alarm * alarm = Alarm::getInstance();
   Rtc* rtc = Rtc::getRtc();
+  
   Connection* connection = Connection::getInstance();
   dcomInit();
   ioInit();
-  sensor.init();
+  lcd->begin();
+  logicControl->init();
+  readSensor->init();
   connection->init();
-
- alarm->joinThread();
+  lcd->threadJoin();
+  alarm->joinThread();
   rtc->joinThread();
   connection->threadjoin();
+  readSensor->threadJoin();
 }
 void loop() {
 }
+

@@ -52,7 +52,10 @@ private:
     // Start the alarm, ringing per hour based on the set time and frequency
     void runAlarm(void* _arg) {
         Alarm* self = (Alarm*)_arg;
-        Rtc* rtc = Rtc::getRtc();       
+        Rtc* rtc = Rtc::getRtc();
+        uint8_t lastSec=0;
+        std::shared_ptr<Lcd> lcd = Lcd::getInstance();     
+        int coutdownShowLcd = 10;  
         while (1) {
             if(self->isRinging){
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -61,9 +64,15 @@ private:
             Time current;
             rtc->getTime(current);
             int value = self->nextTime.Minute - current.Minute;
+            if(lastSec == current.Second) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                continue;
+            }
+            lastSec = current.Second;
             if(value == 0){
                 if(self->nextTime.Second == current.Second){
                     self->isRinging = true;
+                    lcd->show(String(self->remainTime),Lcd::TYPE_REMAIN_TIME_ALARM,3);
                 }   
             }
             else if(value > 0)  {
@@ -72,6 +81,8 @@ private:
             else{
                 self->remainTime = (value + 60);
             }
+            lcd->show(String(self->remainTime),Lcd::TYPE_REMAIN_TIME_ALARM,3);
+            Serial.println("remain time" + String(self->remainTime));
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }

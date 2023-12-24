@@ -29,6 +29,7 @@ private:
     }
     static HttpRequest* httpRequest;
 };
+#endif
 HttpRequest* HttpRequest::httpRequest = nullptr;
 String HttpRequest::post(const std::vector<std::vector<String>>& data, const String& api){
     if(!httpRequest){
@@ -113,4 +114,4 @@ String HttpRequest::get(const String& api){
   
   return payload;      
 }
-#endif
+
