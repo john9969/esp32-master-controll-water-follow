@@ -1,3 +1,5 @@
+#ifndef BOARD_IO_H
+#define BOARD_IO_H
 #include <iostream>
 #include <vector>
 #include <Arduino.h>
@@ -11,13 +13,24 @@
 extern "C"{
     #include <stdbool.h>
     enum ERR_CODE_t{
-        ERR_WIFI_LOST_CONNECT,
+        ERR_WIFI_LOST_CONNECT=0,
         ERR_TIMEOUT_RUNING,
         ERR_SENSOR_FAIL,
         ERR_NON_WATER_SIGNAL
     };
     typedef enum ERR_CODE_t ErrCode;
-    std::vector<ErrCode> err;
+    static bool signalSensor3Wire;
+    static std::vector<ErrCode> err;
+    static int getErrCode(std::vector<ErrCode>& _errCode);
+    static void setErrCode(ErrCode _errCode);
+    static void removeErrCode(ErrCode _errCode);
+    static void IRAM_ATTR callback3wire();
+    static void ioInit();
+    static void blink_led();
+    static void setHigh(uint8_t pin);
+    static void setLow(uint8_t pin);
+    static bool getDigitalState(uint8_t pin);
+    static uint16_t getAnalog(uint8_t pin);
     int getErrCode(std::vector<ErrCode>& _errCode){
         _errCode = err;
         return _errCode.size();
@@ -44,19 +57,19 @@ extern "C"{
             }
         }
     }
-    void setHigh(uint8_t pin);
-    void setLow(uint8_t pin);
-    bool getDigitalState(uint8_t pin);
-    uint16_t getAnalog(uint8_t pin);
+    void IRAM_ATTR callback3wire(){
+        if(!signalSensor3Wire)
+            signalSensor3Wire =true;
+    }
     void ioInit(){
         pinMode(SPEAKER_PIN,OUTPUT);
-        pinMode(SENSOR_INPUT_PIN,INPUT);
+        attachInterrupt(SENSOR_INPUT_PIN,&callback3wire,RISING);
         pinMode(LED_SIGNAL,OUTPUT);
         pinMode(LED,OUTPUT);
         pinMode(HAS_4_WIRE_SENSOR_PIN,INPUT);
         pinMode(START_BTN,INPUT);
+        signalSensor3Wire = false;
     }
-    void blink_led();
     void blink_led(){
         digitalWrite(LED,!digitalRead(LED));
     }
@@ -74,3 +87,4 @@ extern "C"{
         return analogRead(pin);
     }
 }
+#endif

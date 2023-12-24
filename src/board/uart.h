@@ -43,11 +43,22 @@ public:
         _data[length] = '\0';
         this->_serial->print(_data);
     }
-    int read(){
-        return 0;
+    bool read(String& data){
+        if(this->_serial->available()){
+            data = this->_serial->readString();
+            Serial.println("sensor:"+data);
+        }
+        data.trim();
+        if(data.endsWith(")"));
+        removeLast(data);
+        if(data != "")
+            return true;
+        else 
+            return false;
     }
 private:
     HardwareSerial* _serial;
+    void removeLast(String &data);
     bool isUsingSmartSend;
     int baud;
 };
@@ -56,4 +67,14 @@ extern Uart uartSlave;
 
 Uart uartSensor(Uart::COM_PORT_SENSOR);
 Uart uartSlave(Uart::COM_PORT_SLAVE);
+void Uart::removeLast(String &  data){
+    int length = data.length();
+    if(length >1){
+        data.remove(length-1);
+    }
+    else {
+        data="";
+    }
+}
+
 #endif // BOART_UART_H

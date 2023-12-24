@@ -66,15 +66,12 @@ void Connection::checkingConnection(){
                this->timeoutConnection = millis();
                if(!_isConnected){
                     _isConnected = true;
-                    setErrCode(ERR_WIFI_LOST_CONNECT);
+                    removeErrCode(ErrCode::ERR_WIFI_LOST_CONNECT);
                }
-                    
           }
           else{
-
                if(_isConnected) _isConnected = false;
                Serial.println("connecting.. " + String(millis() - this->timeoutConnection));
-
           }
           if((millis() -this->timeoutConnection) > 30000){
                setErrCode(ErrCode::ERR_WIFI_LOST_CONNECT);

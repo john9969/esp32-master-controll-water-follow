@@ -11,10 +11,9 @@ private:
     bool isRinging;
     bool checked;
     int frequencyPerHour;
-    bool alarmSet;
     uint32_t totalSecond;
     std::thread threadAlarm;
-    Alarm() : frequencyPerHour(1), alarmSet(false),isRinging(false),checked(false),totalSecond(0) {
+    Alarm() : frequencyPerHour(1),isRinging(false),checked(false),totalSecond(0) {
         threadAlarm = std::thread(&Alarm::runAlarm,this, this);
         _alarm = this;
     }
@@ -35,14 +34,21 @@ public:
         return _alarm;
     }
 
-    // Set the alarm time
+    // Set the alarm time only set minute
     void setAlarm(const Time& time) {
         nextTime = time;
-        alarmSet = true;
+    }
+    void setMinuteAlarm(const uint8_t & minute){
+        Time setTime = {0,minute,0,0,0,0,0};
+        setAlarm(setTime);
     }
     int getRemainTime() const {
         return this->remainTime;
     }
+    bool getIsRinging() const {
+        return this->isRinging;
+    }
+private:
     // Start the alarm, ringing per hour based on the set time and frequency
     void runAlarm(void* _arg) {
         Alarm* self = (Alarm*)_arg;

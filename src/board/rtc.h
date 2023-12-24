@@ -20,8 +20,8 @@ private:
         while(1){
         Time p_current = rtc->current;
         rtc->read(p_current);
-        //Serial.println("Time:"+ String(p_current.Hour)+ ":" + String(p_current.Minute) + ":" + String(p_current.Second));
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        Serial.println("Time:"+ String(p_current.Hour)+ ":" + String(p_current.Minute) + ":" + String(p_current.Second));
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
         }
     }
     std::thread threadRtc;
