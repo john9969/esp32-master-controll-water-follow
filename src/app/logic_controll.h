@@ -16,25 +16,24 @@ public:
         STATE_MAT=7,
     };
     void run();
-    static std::shared_ptr<LogicControl> getInstance();
-    LogicControl();
+    void init();
+    static LogicControl* getInstance();
     State getState() const;
     void setState(const State& state);
 private:
-    static std::shared_ptr<LogicControl> logicControl;
+    LogicControl();
+    static LogicControl* _logicControl;
+
     State state;
-    Alarm* alarm;
 };
 #endif
-std::shared_ptr<LogicControl> LogicControl::logicControl = nullptr;
+LogicControl* LogicControl::_logicControl = nullptr;
 void LogicControl::run(){
-while (1)
-{
-   if(!this->alarm->getIsRinging()) continue;
+    Alarm * alarm = Alarm::getInstance();
+   if(!alarm->getIsRinging()) return;
     switch (getState())
     {
         case STATE_MEASURING:
-            
             break;
         case STATE_DAY:
             break;
@@ -50,11 +49,11 @@ while (1)
             break;
     }
 }
+void LogicControl::init(){
+    Alarm* alarm = Alarm::getInstance();
+    alarm->setMinuteAlarm(55);
 }
-
 LogicControl::LogicControl(){
-    this->alarm = Alarm::getInstance();
-    this->alarm->setMinuteAlarm(55);
     this->state = STATE_RES;
 }
 void LogicControl::setState(const State& state){
@@ -63,9 +62,9 @@ void LogicControl::setState(const State& state){
 LogicControl::State LogicControl::getState() const {
     return this->state;
 }
-std::shared_ptr<LogicControl> LogicControl::getInstance(){
-    if(!logicControl){
-        logicControl = std::shared_ptr<LogicControl>(new LogicControl());
+LogicControl* LogicControl::getInstance(){
+    if(!_logicControl){
+        _logicControl = new LogicControl();
     }
-    return logicControl;
+    return _logicControl;
 }

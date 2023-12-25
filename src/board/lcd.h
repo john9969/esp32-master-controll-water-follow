@@ -1,8 +1,7 @@
 #include <Arduino.h>
 #include <iostream>
 #include <memory>
-#include <mutex>
-#include <variant>
+#include <vector>
 #include "lib/lcd-iic/LiquidCrystal_I2C.h"
 #define MAXIMUM_DATA 10
 class Lcd: public LiquidCrystal_I2C
@@ -30,33 +29,30 @@ public:
         int length;
     };
     Lcd(uint8_t address, uint8_t col, uint8_t row): LiquidCrystal_I2C(address, col, row){
-        thread = std::thread(&Lcd::run,this);
-    }
-    void threadJoin(){
-        if(thread.joinable()) thread.join();
+        this->freLooping = 100;
     }
     void begin(){
         init();
         init();
         backlight();
     }
-    static std::shared_ptr<Lcd> getInstance(){
-        if(!lcd){
-            lcd = std::shared_ptr<Lcd>(new Lcd(0x27,20,4));
+    static Lcd* getInstance(){
+        if(!_lcd){
+            _lcd = new Lcd(0x27,20,4);
         }
-        return lcd;
+        return _lcd;
     }
     void show(String data,const TYPE& type, const uint8_t& length = 0);
-private:
+    uint32_t getFreLooping(){ return this->freLooping;}
     void run();
-    std::mutex mtx;
-    std::thread thread;
+private:
+    uint32_t freLooping;
     std::vector<DataElement> listData;
-    static std::shared_ptr<Lcd> lcd;
+    static Lcd* _lcd;
     void padLeft(String& data,const uint8_t & length);
 };
 
-std::shared_ptr<Lcd> Lcd::lcd = nullptr;
+Lcd* Lcd::_lcd = nullptr;
 void Lcd::padLeft(String& data, const uint8_t& length){
     if(data.length() >= length) return;
     String append = "";
@@ -66,16 +62,12 @@ void Lcd::padLeft(String& data, const uint8_t& length){
     data = append + data;
 }
 void Lcd::run(){
-    while (1)
-    {
+
     if(this->listData.size() <=0){
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        continue;
+        return;
     } 
-    std::unique_lock<std::mutex> lock(this->mtx);
     DataElement dataElement = listData.back();
     listData.pop_back();
-    lock.unlock();
     TYPE type = dataElement.type;
     String data = dataElement.data;
     switch (type) {
@@ -123,7 +115,6 @@ void Lcd::run(){
             setCursor(0,1);
             print("U:" + data);
             break;
-            break;
         case TYPE_TIMEOUT_MEASURING:
             break;
         case TYPE_POS:
@@ -145,16 +136,15 @@ void Lcd::run(){
         case TYPE_ANGLE:
             break;
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
+
 }
+
 void Lcd::show(String data,const TYPE& type, const uint8_t & length){
-    Serial.println(data + String(type));
+    Serial.println("Data show lcd " + data + String(type));
     if(listData.size() > MAXIMUM_DATA){
         Serial.println("lcd too much data show");
         return;
     } 
-    std::lock_guard<std::mutex> lock (this->mtx);
     DataElement dataElement = {data,type,length};
     listData.push_back(dataElement);
 }   

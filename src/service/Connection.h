@@ -7,8 +7,8 @@
 #include <thread>
 #include <chrono>
 #include "board/dcom.h"
-#define WIFI_ID     "Minh Tuan"
-#define WIFI_PASS   "j12345678"
+#define WIFI_ID     "Selex_Mtors_T2"
+#define WIFI_PASS   "smartelectric"
 class Connection
 {
 private:
@@ -26,7 +26,7 @@ public:
      }
      Connection() :_isConnected(false){
           timeoutConnection = 0;
-          threadConnection = std::thread(&Connection::checkingConnection,this);
+          this->threadConnection = std::thread(&Connection::checkingConnection,this);
           connection = this;
      }
      void init();
@@ -34,7 +34,7 @@ public:
      void threadjoin(){
           if(this->threadConnection.joinable()){
                this->threadConnection.join();
-          }
+          }         
      }
      void checkingConnection();
 };
@@ -44,46 +44,48 @@ void Connection::init(){
     WiFi.mode(WIFI_STA);
     WiFi.begin(WIFI_ID, WIFI_PASS);
     WiFi.setAutoConnect(true);
+    WiFi.setAutoReconnect(true);
     _isConnected = false;
+    
     
 }
 void Connection::checkingConnection(){
      Time time;
-     while (1) 
-     {     
-          Rtc* rtc = Rtc::getRtc();
-          rtc->getTime(time);
-          if(time.Hour == 3 && time.Minute == 0&& time.Second == 0){
-               WiFi.disconnect();
-               std::this_thread::sleep_for(std::chrono::seconds(1));
+     Rtc* rtc = Rtc::getInstance();
+     rtc->getTime(time);
+     if(time.Hour == 3 && time.Minute == 0&& time.Second == 0){
+          std::this_thread::sleep_for(std::chrono::seconds(1));
+          this->timeoutConnection = millis();
+          std::thread threadReconnect(&dcomReset);
+          threadReconnect.join();
+          Serial.println("disconnect wifi");
+     }
+     if(WiFi.status() ==  WL_CONNECTED){
+          this->timeoutConnection = millis();
+          if(!isConnected()){
+               _isConnected = true;
+               removeErrCode(ErrCode::ERR_WIFI_LOST_CONNECT);
+               Serial.println("wifi connected");
+          }
+     }
+     else{
+          if(_isConnected) _isConnected = false;
+          Serial.print("connecting.. " );
+          Serial.print("id:" + WiFi.SSID(1));
+          Serial.println(String(millis() - this->timeoutConnection));
+     }
+     if((millis() -this->timeoutConnection) > 30000){
+          if(dcomState == Dcom_State_ON){
+               dcomState = Dcom_State_INIT_RESET;
+               Serial.println("Start Reset");
+          }
+          if(dcomState == Dcom_State_DONE_RESET){
                this->timeoutConnection = millis();
-               std::thread threadReconnect(&dcomReset);
-               threadReconnect.join();
-               init();
-               Serial.println("disconnect wifi");
+               Serial.println("done Reset");
+               dcomState = Dcom_State_ON;
           }
-          if(WiFi.status() ==  WL_CONNECTED){
-               this->timeoutConnection = millis();
-               if(!_isConnected){
-                    _isConnected = true;
-                    removeErrCode(ErrCode::ERR_WIFI_LOST_CONNECT);
-               }
-          }
-          else{
-               if(_isConnected) _isConnected = false;
-               Serial.println("connecting.. " + String(millis() - this->timeoutConnection));
-          }
-          if((millis() -this->timeoutConnection) > 30000){
-               setErrCode(ErrCode::ERR_WIFI_LOST_CONNECT);
-               std::thread threadReconnect(&dcomReset);
-               threadReconnect.join();
-               this->timeoutConnection = millis();
-          }
-          std::this_thread::sleep_for(std::chrono::seconds(1)); 
-     }   
+          dcomReset();
+     }
 }
-
-
-
 
 #endif

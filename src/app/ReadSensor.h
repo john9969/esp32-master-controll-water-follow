@@ -1,8 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
 #include "board/io.h"
 #include "board/uart.h"
 #define TIMEOUT_SENSOR 60000
@@ -24,71 +21,69 @@ public:
     void clearRound(){
         this->dataSensor.round =0;
     }
-    void threadJoin(){
-        for(std::thread& thread :threads){
-            if(thread.joinable())
-                thread.join();
-        }
-    }
-    static std::shared_ptr<ReadSensor> getInstance(){
+    static ReadSensor* getInstance(){
         if(!readSensor){
-            readSensor = std::shared_ptr<ReadSensor>(new ReadSensor());
+            readSensor = new ReadSensor();
         }
         return readSensor;
+    }
+    void process4wire(){
+        uint64_t timeOnSignalLed=0;
+        bool isLedOn = false;
+        String data = "";
+        if((millis() - timeoutSensor) > TIMEOUT_SENSOR){
+            setErrCode(ErrCode::ERR_SENSOR_FAIL);
+        }
+        if(isLedOn){
+            if((millis() - timeOnSignalLed) > 500){
+                isLedOn = false;
+                setLow(LED_SIGNAL);
+            }
+        }
+        if(!uartSensor.read(data)){
+        }
+        if(data != "*"){
+            dataSensor.angle = data.toInt();
+            dataSensor.round++;
+            isLedOn = true;
+            timeOnSignalLed = millis();
+            setHigh(LED_SIGNAL);
+        }
+        timeoutSensor = millis();
+    
     }
 private:
     bool hasSignalSensor;
     bool enableLed;
-    static std::shared_ptr<ReadSensor> readSensor;
-    std::mutex mtx;
-    std::condition_variable cv;
+    static ReadSensor* readSensor;
     uint64_t timeoutSensor;
     DataSensor dataSensor;
-    std::vector<std::thread> threads;
     void process3Wire(){
-        while (1)
-        {
+        static bool isLedOn = false;
+
+        if(isLedOn){
+            setLow(LED_SIGNAL);
+        }
         if(signalSensor3Wire){
             this->dataSensor.round++;
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            isLedOn = true;
+            Serial.println("round:"+ String(dataSensor.round));
+            setHigh(LED_SIGNAL);
+            signalSensor3Wire = false;
         }
     }
-    void process4wire(){
-        while (1)
-        {   
-            String data = "";
-            if((millis() - timeoutSensor) > TIMEOUT_SENSOR){
-                setErrCode(ErrCode::ERR_SENSOR_FAIL);
-            }
-            if(!uartSensor.read(data)){
-                continue;
-            }
-            if(data != "*"){
-                dataSensor.angle = data.toInt();
-                dataSensor.round++;
-            }
-            timeoutSensor = millis();
-        }
-        
-    }
+    
     void processBlinkLed(){
         while (1)
         {
-        std::unique_lock<std::mutex> lock(mtx);
-        cv.wait(lock, [&] { return this->enableLed; });
         setHigh(LED_SIGNAL);
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
         setLow(LED_SIGNAL);
         this->enableLed = false;
         }
-        
     }
     ReadSensor(): hasSignalSensor(false), dataSensor({0,0}),enableLed(false){
-        threads.push_back(std::thread(&ReadSensor::process3Wire, this));
-        threads.push_back(std::thread(&ReadSensor::process4wire,this));
-        threads.push_back(std::thread(&ReadSensor::processBlinkLed,this));
+        
     }
 
 };
-std::shared_ptr<ReadSensor> ReadSensor::readSensor = nullptr;
+ReadSensor* ReadSensor::readSensor = nullptr;

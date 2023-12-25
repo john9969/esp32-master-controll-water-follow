@@ -35,7 +35,7 @@ String HttpRequest::post(const std::vector<std::vector<String>>& data, const Str
     if(!httpRequest){
         httpRequest = new HttpRequest();
     }
-    Connection * connection = Connection::getInstance();
+    Connection* connection = Connection::getInstance();
     if(!connection->isConnected()){
         setErrCode(ERR_WIFI_LOST_CONNECT);
         return "";
@@ -74,7 +74,8 @@ String HttpRequest::post(const String& data, const String& api){
     if(!httpRequest){
         httpRequest = new HttpRequest();
     }
-    Connection * connection = Connection::getInstance();
+    Connection* connection = Connection::getInstance();
+    // Connection * connection = Connection::getInstance();
     if(!connection->isConnected()){
         setErrCode(ERR_WIFI_LOST_CONNECT);
         return "";
