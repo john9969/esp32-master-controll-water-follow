@@ -7,13 +7,12 @@ private:
     int remainTime;
     Time nextTime;
     bool isRinging;
-    bool checked;
     int frequencyPerHour;
     uint32_t totalSecond;
     Time currentTime;
 
 public:
-    Alarm() : frequencyPerHour(1),isRinging(false),checked(false),totalSecond(0) {
+    Alarm() : frequencyPerHour(1),isRinging(false),totalSecond(0) {
     }
     void ringAlarm() const {
     }
@@ -36,6 +35,9 @@ public:
     }
     bool getIsRinging() const {
         return this->isRinging;
+    }
+    void resetAlarm(){
+        this->isRinging = false;
     }
     void runAlarm() {
         static uint8_t lastSec=0;

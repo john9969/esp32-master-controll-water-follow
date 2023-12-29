@@ -17,8 +17,9 @@ public:
 
     ConfigUart(COM_PORT comPort, int _baud = 115200);
     void begin();
-    void send(const std::string& data);
+    void send(const String& data);
     bool read(String& data);
+    void clearBuffer();
 private:
     COM_PORT comport;
     HardwareSerial* _serial;
@@ -27,4 +28,5 @@ private:
 };
 extern ConfigUart uartSensor;
 extern ConfigUart uartSlave;
+extern ConfigUart uartDebug;
 #endif // BOART_UART_H

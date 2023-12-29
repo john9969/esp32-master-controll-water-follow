@@ -8,18 +8,20 @@
 #include <vector>    
 #include <memory>
 #define WORKSTATION_ID "010"
+#define API_GET_TIME "https://donuoctrieuduong.xyz/dev_test/get_time.php"
+#define API_POST "https://donuoctrieuduong.xyz/test/index.php/Sql/getdatafromesp8266"
 class HttpRequest {
 public:
     enum Type{
-        TYPE_DEBUG,
-        TYPE_DATA,
+        TYPE_DEBUG  = 0,
+        TYPE_CRITICAL
     };
-    static String post(const std::vector<std::vector<String>>& data, const String& api);
-    static String post(const String& dataDebug, const String& api);
-    static String get(const String& API);
-    static HttpRequest* getInstance(){
+    String post(const std::vector<std::vector<String>>& data, const String& api);
+    String post(const String& dataDebug, const String& api, const Type& type);
+    String get(const String& API);
+    static std::shared_ptr<HttpRequest> getInstance(){
         if(!httpRequest){
-            httpRequest = new HttpRequest();
+            httpRequest = std::shared_ptr<HttpRequest>(new HttpRequest());
         }
         return httpRequest;
     }
@@ -27,14 +29,12 @@ private:
     HttpRequest(){
 
     }
-    static HttpRequest* httpRequest;
+    static std::shared_ptr<HttpRequest> httpRequest;
 };
 #endif
-HttpRequest* HttpRequest::httpRequest = nullptr;
+std::shared_ptr<HttpRequest> HttpRequest::httpRequest = nullptr;
+
 String HttpRequest::post(const std::vector<std::vector<String>>& data, const String& api){
-    if(!httpRequest){
-        httpRequest = new HttpRequest();
-    }
     Connection* connection = Connection::getInstance();
     if(!connection->isConnected()){
         setErrCode(ERR_WIFI_LOST_CONNECT);
@@ -42,6 +42,7 @@ String HttpRequest::post(const std::vector<std::vector<String>>& data, const Str
     }
     std::unique_ptr<HTTPClient> http(new HTTPClient());
     http->begin(api.c_str());    
+    http->addHeader("Content-Type", "application/x-www-form-urlencoded");
     //String httpRequestData = "apikey=senddata&keyword=TA&workstationid=010&data=100'120'180' 060'090'090'";
     String dataPost ="apikey=senddata"
                  "&keyword=";   
@@ -53,7 +54,7 @@ String HttpRequest::post(const std::vector<std::vector<String>>& data, const Str
             dataPost += p_value;
         }
     }
-    Serial.println(dataPost);  
+    Serial.println("data post: "  + dataPost);  
     
     int httpResponseCode = http->POST(dataPost);
     String payload="";
@@ -70,10 +71,7 @@ String HttpRequest::post(const std::vector<std::vector<String>>& data, const Str
     http->end();
     return payload;
 }
-String HttpRequest::post(const String& data, const String& api){
-    if(!httpRequest){
-        httpRequest = new HttpRequest();
-    }
+String HttpRequest::post(const String& data, const String& api, const Type& type){
     Connection* connection = Connection::getInstance();
     // Connection * connection = Connection::getInstance();
     if(!connection->isConnected()){
@@ -82,20 +80,32 @@ String HttpRequest::post(const String& data, const String& api){
     }
     std::unique_ptr<HTTPClient> http(new HTTPClient());
     http->begin(api.c_str());    
+    http->addHeader("Content-Type", "application/x-www-form-urlencoded");
     //String httpRequestData = "apikey=senddata&keyword=TA&workstationid=010&data=100'120'180' 060'090'090'";
     String dataPost ="apikey=senddata"
                  "&keyword=";   
-    dataPost += "TB";
+    if(type == TYPE_CRITICAL) dataPost += "TC";
+    else if( type == TYPE_DEBUG) dataPost += "TB";
     dataPost += "&workstationid=" WORKSTATION_ID;
     dataPost += "&data=";
     dataPost += data;
     Serial.println(dataPost);  
-    return "";
+    int httpResponseCode = http->POST(dataPost);
+    String payload="";
+    if (httpResponseCode>0) {
+        Serial.print("HTTP Response code: ");
+        Serial.println(httpResponseCode);
+        payload = http->getString();
+        Serial.println(payload);
+      }
+      else {
+        Serial.print("Error code: ");
+        Serial.println(httpResponseCode);
+    }
+    http->end();
+    return payload;
 }
 String HttpRequest::get(const String& api){
-    if(!httpRequest){
-        httpRequest = new HttpRequest();
-    }
     std::unique_ptr<HTTPClient> http(new HTTPClient());
     http->begin(api.c_str());    
     int httpResponseCode = http->GET();
@@ -112,7 +122,6 @@ String HttpRequest::get(const String& api){
     Serial.println(httpResponseCode);
   }
   http->end();
-  
   return payload;      
 }
 

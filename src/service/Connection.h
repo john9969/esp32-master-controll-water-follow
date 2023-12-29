@@ -7,8 +7,8 @@
 #include <thread>
 #include <chrono>
 #include "board/dcom.h"
-#define WIFI_ID     "Selex_Mtors_T2"
-#define WIFI_PASS   "smartelectric"
+#define WIFI_ID     "Minh Tuan"
+#define WIFI_PASS   "j12345678"
 class Connection
 {
 private:
@@ -42,6 +42,7 @@ Connection* Connection::connection = nullptr;
 
 void Connection::init(){
     WiFi.mode(WIFI_STA);
+    WiFi.disconnect();
     WiFi.begin(WIFI_ID, WIFI_PASS);
     WiFi.setAutoConnect(true);
     WiFi.setAutoReconnect(true);
@@ -74,7 +75,7 @@ void Connection::checkingConnection(){
           Serial.print("id:" + WiFi.SSID(1));
           Serial.println(String(millis() - this->timeoutConnection));
      }
-     if((millis() -this->timeoutConnection) > 30000){
+     if((millis() -this->timeoutConnection) > 60000){
           if(dcomState == Dcom_State_ON){
                dcomState = Dcom_State_INIT_RESET;
                Serial.println("Start Reset");
@@ -82,6 +83,7 @@ void Connection::checkingConnection(){
           if(dcomState == Dcom_State_DONE_RESET){
                this->timeoutConnection = millis();
                Serial.println("done Reset");
+               init();
                dcomState = Dcom_State_ON;
           }
           dcomReset();

@@ -1,57 +1,80 @@
-#include "app/logic_controll.h"
+#include "app/SyncData.h"
 #include "lib/thread/Thread.h"
 #include "lib/thread/ThreadController.h"
 void callback_logic_control();
 void callback_read_sensor();
 void callback_sync_sensor();
-
-void callback_dcom();
-void callback_lcd();
-void callback_threadrtc();
 void callback_uart();
+void callback_io();
+void callback_lcd();
+void callback_rtc();
 
 void callback_alarm();
 void callback_connection();
 void callback_http();
+void callback_sync_data();
 ThreadController controller = ThreadController();
 LogicControl* logicControl = LogicControl::getInstance();
 ReadSensor* readSensor = ReadSensor::getInstance();
+
 Lcd* lcd = Lcd::getInstance();
 Rtc* rtc = Rtc::getInstance();
 
+SyncData syncData;
+
 Alarm* ringAlarm = Alarm::getInstance();
 Connection * connection = Connection::getInstance();
-HttpRequest* httpRequest = HttpRequest::getInstance();
 
 Thread threadLogicControl = Thread();
 Thread threadReadSensor = Thread();
 Thread threadSyncServer = Thread();
 
-Thread threadDcom = Thread();
+Thread threadIO = Thread();
 Thread threadLcd = Thread();
 Thread threadRtc = Thread();
-Thread threadUart = Thread();
 
 Thread threadAlarm = Thread();
 Thread threadConnection = Thread();
 Thread threadHttpRequest = Thread();
+Thread threadSyncData = Thread();
+Thread threadUart = Thread();
 void setup() {
-  UART_DEBUG.begin(115200);
   threadConnection.onRun(&callback_connection);
   threadConnection.setInterval(1000);
+  threadIO.onRun(&callback_io);
+  threadIO.setInterval(100);
   threadLcd.onRun(&callback_lcd);
   threadLcd.setInterval(100);
-
+  threadUart.onRun(&callback_uart);
+  threadUart.setInterval(200);
+  threadRtc.onRun(&callback_rtc);
+  threadRtc.setInterval(100);
+  threadAlarm.onRun(&callback_alarm);
+  threadAlarm.setInterval(100);
+  threadReadSensor.onRun(&callback_read_sensor);
+  threadReadSensor.setInterval(10);
+  threadSyncData.onRun(&callback_sync_data);
+  threadSyncData.setInterval(5000);
+  threadLogicControl.onRun(&callback_logic_control);
+  threadLogicControl.setInterval(10);
   dcomInit();
   ioInit();
   lcd->begin();
   connection->init();
   logicControl->init();
   readSensor->init();
-
+  uartSlave.begin();
+  uartDebug.begin();
+  controller.add(&threadUart);
+  controller.add(&threadRtc);
   controller.add(&threadLcd);
   controller.add(&threadConnection);
-
+  
+  controller.add(&threadAlarm);
+  controller.add(&threadIO);
+  controller.add(&threadReadSensor);
+  controller.add(&threadSyncData);
+  controller.add(&threadLogicControl);
 }
 void loop() {
   controller.run();
@@ -59,27 +82,46 @@ void loop() {
 
 
 void callback_logic_control(){
-
+  logicControl->run();
 }
 void callback_read_sensor(){
-
+  readSensor->process4wire();
+  readSensor->process3Wire();
 }
 void callback_sync_sensor(){
 
 }
 
-void callback_dcom(){
-
+void callback_io(){
+  checkBtn();
+  speakerLoop();
 }
+
 void callback_lcd(){
   lcd->run();
 }
-void callback_threadrtc(){
+void callback_rtc(){
   rtc->run();
 }
-void callback_uart(){
-  readSensor->process4wire();
 
+void callback_uart(){
+  String data = "";
+  if(uartSlave.read(data)){
+    Serial.println("slave: " + data);
+  }
+  if(Serial.available()){
+    String data = Serial.readString();
+    if(data.startsWith("start")){
+      hasStartBtn =true;
+      Serial.println("start ok");
+    }
+    else if(data.startsWith("reset")){
+      ESP.restart();
+    }
+    else if(data.startsWith("slave")){
+      uartSlave.send("A");
+    }
+  }
 }
 
 void callback_alarm(){
@@ -88,6 +130,8 @@ void callback_alarm(){
 void callback_connection(){
   connection->checkingConnection();
 }
-void callback_http(){
 
+void callback_sync_data(){
+  syncData.syncErr();
+  syncData.syncTime();
 }

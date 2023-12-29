@@ -1,3 +1,6 @@
+#ifndef BOARD_LCD_H
+#define BOARD_LCD_H
+
 #include <Arduino.h>
 #include <iostream>
 #include <memory>
@@ -51,7 +54,7 @@ private:
     static Lcd* _lcd;
     void padLeft(String& data,const uint8_t & length);
 };
-
+#endif // DEBUG
 Lcd* Lcd::_lcd = nullptr;
 void Lcd::padLeft(String& data, const uint8_t& length){
     if(data.length() >= length) return;
@@ -63,9 +66,9 @@ void Lcd::padLeft(String& data, const uint8_t& length){
 }
 void Lcd::run(){
 
-    if(this->listData.size() <=0){
+    if(this->listData.size() <= 0){
         return;
-    } 
+    }
     DataElement dataElement = listData.back();
     listData.pop_back();
     TYPE type = dataElement.type;
@@ -86,20 +89,14 @@ void Lcd::run(){
 
         case TYPE_ERR:
             setCursor(0,1);
-            print("    ");
+            print("          ");
             setCursor(0,1);
-            print("E:" + data);
+            print(data);
             break;
         case TYPE_REMAIN_TIME_ALARM:
-            setCursor(6,1);
+            setCursor(15,1);
             print("    ");
-            setCursor(5,1);
-            if(dataElement.length >0){
-                padLeft(data,dataElement.length);
-            }
-            else{
-                padLeft(data,3);
-            }
+            setCursor(15,1);
             print("R:" + data);
             break;
         case TYPE_TIMEOUT_SENSOR_4_WIRE:
@@ -129,9 +126,10 @@ void Lcd::run(){
             setCursor(9,1);
             break;
         case TYPE_COUNT_UP:
-            setCursor(16,1);
+            setCursor(16,2);
             print("     ");
-            setCursor(16,1);
+            setCursor(16,2);
+            print("T:"+data);
             break;
         case TYPE_ANGLE:
             break;
@@ -140,11 +138,12 @@ void Lcd::run(){
 }
 
 void Lcd::show(String data,const TYPE& type, const uint8_t & length){
-    Serial.println("Data show lcd " + data + String(type));
+    //Serial.println("Data show lcd " + data + String(type));
     if(listData.size() > MAXIMUM_DATA){
         Serial.println("lcd too much data show");
         return;
     } 
+    if(length >0 )padLeft(data,length);
     DataElement dataElement = {data,type,length};
     listData.push_back(dataElement);
 }   
