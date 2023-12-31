@@ -1,51 +1,82 @@
+#include <Arduino.h>
 #include "board/rtc.h"
 #include <iostream>
-#include <chrono>
-#include <thread>
 class Alarm {
 private:
-    Time alarmTime;
+    static Alarm* _alarm;
+    int remainTime;
+    Time nextTime;
+    bool isRinging;
     int frequencyPerHour;
-    bool alarmSet;
-
-    Alarm() : frequencyPerHour(1), alarmSet(false) {}
+    uint32_t totalSecond;
+    Time currentTime;
 
 public:
-    static Alarm& getInstance() {
-        static Alarm instance; // Guaranteed to be destroyed and instantiated on first use.
-        return instance;
+    Alarm() : frequencyPerHour(1),isRinging(false),totalSecond(0) {
+    }
+    void ringAlarm() const {
+    }
+    static Alarm* getInstance() {
+        if(!_alarm){
+            _alarm = new Alarm();
+        }
+        return _alarm;
     }
 
-    // Set the alarm time
-    void setTime(const Time& time) {
-        alarmTime = time;
-        alarmSet = true;
+    void setAlarm(const Time& time) {
+        nextTime = time;
     }
-    void getTime(Time& time) const {
-        time = alarmTime;
+    void setMinuteAlarm(const uint8_t & minute){
+        Time setTime = {0,minute,0,0,0,0,0};
+        setAlarm(setTime);
     }
+    int getRemainTime() const {
+        return this->remainTime;
+    }
+    bool getIsRinging() const {
+        return this->isRinging;
+    }
+    void resetAlarm(){
+        this->isRinging = false;
+    }
+    void runAlarm() {
+        static uint8_t lastSec=0;
+        static uint8_t lastRemainTime =0;
+        static int coutdownShowLcd = 10;  
+        if(isRinging){
+            return;
+        }
+        Time current;
+        Rtc* rtc = Rtc::getInstance();
+        Lcd* lcd = Lcd::getInstance();
+        rtc->getTime(current);
+        if(current.Hour == 12 || current.Hour == 0){
+            if(current.Minute == 0 && current.Second ==0){
+                ESP.restart();
+            }
+        }
+        int value = nextTime.Minute - current.Minute;
+        if(lastSec == current.Second) {
+            return;
+        }
+        lastSec = current.Second;
+        if(value == 0){
+            if(nextTime.Second == current.Second){
+                isRinging = true;
+                lcd->show(String(0),Lcd::TYPE_REMAIN_TIME_ALARM,3);
+            }   
+        }
+        else if(value > 0)  {
+            remainTime = value;
+        }
+        else{
+            remainTime = (value + 60);
+        }
 
-    // Set the alarm with a specified frequency (default is 1 per hour)
-    void setAlarm(const Time& time, int frequencyPerHour = 1) {
-        setTime(time);
-        this->frequencyPerHour = frequencyPerHour;
-    }
-
-    // Start the alarm, ringing per hour based on the set time and frequency
-    void startAlarm() {
-        while (alarmSet) {
-            std::this_thread::sleep_for(std::chrono::hours(1 / frequencyPerHour));
-            ringAlarm();
+        if(lastRemainTime != remainTime){
+            lcd->show(String(remainTime),Lcd::TYPE_REMAIN_TIME_ALARM,3);
+            lastRemainTime = remainTime;
         }
     }
-
-private:
-    // Private method to simulate the alarm ringing
-    void ringAlarm() const {
-        Time currentTime;
-        getTime(currentTime);
-
-        std::cout << "Alarm ringing at " << currentTime.hours << ":"
-                  << currentTime.minutes << ":" << currentTime.seconds << std::endl;
-    }
 };
+Alarm* Alarm::_alarm= nullptr;

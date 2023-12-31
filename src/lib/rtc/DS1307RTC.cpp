@@ -79,7 +79,7 @@ bool DS1307RTC::read(tmElements_t &tm)
   tm.Wday = bcd2dec(Wire.read() );
   tm.Day = bcd2dec(Wire.read() );
   tm.Month = bcd2dec(Wire.read() );
-  tm.Year = y2kYearToTm((bcd2dec(Wire.read())));
+  tm.Year = (bcd2dec(Wire.read()));
 #else
   sec = Wire.receive();
   tm.Second = bcd2dec(sec & 0x7f);   
@@ -108,7 +108,7 @@ bool DS1307RTC::write(tmElements_t &tm)
   Wire.write(dec2bcd(tm.Wday));   
   Wire.write(dec2bcd(tm.Day));
   Wire.write(dec2bcd(tm.Month));
-  Wire.write(dec2bcd(tmYearToY2k(tm.Year))); 
+  Wire.write(dec2bcd(tm.Year)); 
 #else  
   Wire.send(0x00); // reset register pointer  
   Wire.send(0x80); // Stop the clock. The seconds will be written last

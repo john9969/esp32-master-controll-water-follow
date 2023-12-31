@@ -11,7 +11,7 @@
 // library interface description
 class DS1307RTC
 {
-  public:
+public:
     DS1307RTC();
     static time_t get();
     static bool set(time_t t);
@@ -21,7 +21,7 @@ class DS1307RTC
     static unsigned char isRunning();
     static void setCalibration(char calValue);
     static char getCalibration();
-  private:
+private:
     static bool exists;
     static uint8_t dec2bcd(uint8_t num);
     static uint8_t bcd2dec(uint8_t num);
