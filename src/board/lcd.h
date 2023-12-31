@@ -24,7 +24,10 @@ public:
         
         TYPE_ROUND,
         TYPE_COUNT_UP,
-        TYPE_ANGLE      
+        TYPE_ANGLE,
+
+        TYPE_PRIVIOUS_DATA_MEASURING,     
+
     };
     struct DataElement{
         String data;
@@ -76,13 +79,9 @@ void Lcd::run(){
     switch (type) {
         case TYPE_DATE:
             setCursor(0,0);
-            print("        ");
-            setCursor(0,0);
             print(data);
             break;
         case TYPE_TIME:
-            setCursor(12,0);
-            print("        ");
             setCursor(12,0);
             print(data);
             break;
@@ -95,8 +94,6 @@ void Lcd::run(){
             break;
         case TYPE_REMAIN_TIME_ALARM:
             setCursor(15,1);
-            print("    ");
-            setCursor(15,1);
             print("R:" + data);
             break;
         case TYPE_TIMEOUT_SENSOR_4_WIRE:
@@ -107,31 +104,34 @@ void Lcd::run(){
             break;
 
         case TYPE_UPDATE_COUNT_DOWN:
-            setCursor(12,1);
-            print("    ");
+            
             setCursor(0,1);
             print("U:" + data);
             break;
         case TYPE_TIMEOUT_MEASURING:
             break;
         case TYPE_POS:
-            setCursor(3,1);
-            print("     ");
-            setCursor(3,1);
+            setCursor(0,2);
+            print(data);
             break;
-
         case TYPE_ROUND:
-            setCursor(9,1);
-            print("      ");
-            setCursor(9,1);
+            setCursor(5,2);
+            print("R:"+ data);
             break;
         case TYPE_COUNT_UP:
-            setCursor(16,2);
-            print("     ");
-            setCursor(16,2);
+            
+            setCursor(15,2);
             print("T:"+data);
             break;
         case TYPE_ANGLE:
+            setCursor(10,2);
+            print("-"+data);
+            break;
+        case TYPE_PRIVIOUS_DATA_MEASURING:
+            setCursor(0,3);
+            print("                 ");
+            setCursor(0,3);
+            print(data);
             break;
     }
 

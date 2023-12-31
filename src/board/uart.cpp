@@ -1,6 +1,6 @@
 #include "uart.h"
 ConfigUart uartSensor(COM_PORT_SENSOR);
-ConfigUart uartSlave(COM_PORT_SLAVE);
+ConfigUart uartSlave(COM_PORT_SLAVE,9600);
 ConfigUart uartDebug(COM_PORT_DEBUG);
 void ConfigUart::begin(){
     this->_serial->begin(baud);
@@ -16,16 +16,13 @@ void ConfigUart::removeLast(String &  data){
 }
 bool ConfigUart::read(String& data){
     if(this->_serial->available()){
-        data = this->_serial->readString();
-        Serial.println("sensor:"+data);
+        data = this->_serial->readStringUntil(')');
         data.trim();
-        if(data.endsWith(")")){
-            removeLast(data);
-            if(data != "")
-                return true;
-            else 
-                return false;
+        if(data != ""){
+            return true;
         }
+        else 
+            return false;
     }
     return false;
 }
@@ -51,11 +48,6 @@ ConfigUart::ConfigUart(COM_PORT comPort, int _baud):comport(comPort), baud(_baud
 }
 void ConfigUart::send(const String& data){
     String _data = "";
-    // int length = data.length();
-    // if(length > 100) length = 100;
-    // for(int i =0 ; i< length; i++){
-    //     _data[i] = data[i];
-    // }
     _data = data+ ")";
     Serial.println("data send: " + _data); 
     this->_serial->print(_data);

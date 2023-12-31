@@ -1,6 +1,7 @@
 #include "app/SyncData.h"
 #include "lib/thread/Thread.h"
 #include "lib/thread/ThreadController.h"
+
 void callback_logic_control();
 void callback_read_sensor();
 void callback_sync_sensor();
@@ -39,6 +40,7 @@ Thread threadHttpRequest = Thread();
 Thread threadSyncData = Thread();
 Thread threadUart = Thread();
 void setup() {
+  delay(2000);
   threadConnection.onRun(&callback_connection);
   threadConnection.setInterval(1000);
   threadIO.onRun(&callback_io);
@@ -46,7 +48,7 @@ void setup() {
   threadLcd.onRun(&callback_lcd);
   threadLcd.setInterval(100);
   threadUart.onRun(&callback_uart);
-  threadUart.setInterval(200);
+  threadUart.setInterval(5);
   threadRtc.onRun(&callback_rtc);
   threadRtc.setInterval(100);
   threadAlarm.onRun(&callback_alarm);
@@ -60,11 +62,14 @@ void setup() {
   dcomInit();
   ioInit();
   lcd->begin();
+  Serial.begin(115200);
   connection->init();
   logicControl->init();
   readSensor->init();
   uartSlave.begin();
-  uartDebug.begin();
+  // pinMode(9,INPUT_PULLUP);
+  // pinMode(10,OUTPUT);
+  // Serial1.begin(115200);
   controller.add(&threadUart);
   controller.add(&threadRtc);
   controller.add(&threadLcd);
@@ -106,9 +111,7 @@ void callback_rtc(){
 
 void callback_uart(){
   String data = "";
-  if(uartSlave.read(data)){
-    Serial.println("slave: " + data);
-  }
+
   if(Serial.available()){
     String data = Serial.readString();
     if(data.startsWith("start")){
@@ -119,7 +122,7 @@ void callback_uart(){
       ESP.restart();
     }
     else if(data.startsWith("slave")){
-      uartSlave.send("A");
+      // uartSlave.send("A");
     }
   }
 }

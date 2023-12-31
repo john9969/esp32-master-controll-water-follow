@@ -167,16 +167,24 @@ extern "C"{
         speaker.timeOnspeaker = timeOn;
         speaker._timeRetainSpeaker= millis();
         speaker.isEnable = true;
+        // Serial.println("time ON" + String(speaker.timeOnspeaker));
+        // Serial.println("time retain" + String(speaker._timeRetainSpeaker));
+        
     }
     void speakerLoop(){
         if(!speaker.isEnable) return;
+        // Serial.println("mili: " + String(millis()));
+        // Serial.println("retain: " +String(speaker._timeRetainSpeaker));
+        // Serial.println("timeOn: " + String(speaker.timeOnspeaker));
         if((millis() - speaker._timeRetainSpeaker) < speaker.timeOnspeaker){
             if(!speaker.isSpeakerActive) {
+                // Serial.println("speaker enable");
                 setHigh(SPEAKER_PIN);
                 speaker.isSpeakerActive = true;
             }
         }
         else {
+            // Serial.println("speaker off");
             speaker.isEnable = false;
             speaker.isSpeakerActive = false;
             setLow(SPEAKER_PIN);

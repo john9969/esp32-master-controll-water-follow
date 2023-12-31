@@ -32,15 +32,15 @@ public:
         return readSensor;
     }
     void process4wire(){
-        bool isLedOn = false;
         String data = "";
         if((millis() - timeoutSensor) > TIMEOUT_SENSOR){
             setErrCode(ErrCode::ERR_SENSOR_FAIL);
         }
-        if(isLedOn){
-            if((millis() - timeOnSignalLed) > 500){
-                isLedOn = false;
+        if(isLed4WireOn){
+            if((millis() - timeOnSignalLed) > 700){
+                isLed4WireOn = false;
                 setLow(LED_SIGNAL);
+                // Serial.println("led low ");
             }
         }
         if(!uartSensor.read(data)){
@@ -50,17 +50,21 @@ public:
             if(data.startsWith("start")){
                 hasStartBtn = true;
             }
-            data.replace("(","");
             return;
         }
-        
+        data.replace("(","");
         if(data != "*"){
             dataSensor.angle = data.toInt();
             dataSensor.round++;
-            isLedOn = true;
+            Serial.println("raw round: " + String(dataSensor.round) + "raw angle: "+ String(dataSensor.angle));
+            isLed4WireOn = true;
             timeOnSignalLed = millis();
             setHigh(LED_SIGNAL);
         }
+        else{
+            removeErrCode(ErrCode::ERR_SENSOR_FAIL);
+        }
+
         timeoutSensor = millis();
     
     }
@@ -84,6 +88,7 @@ public:
     }
 private:
     bool isLedOn;
+    bool isLed4WireOn;
     uint64_t timeout3wireSignal;
     uint64_t timeOnSignalLed;
     bool hasSignalSensor;
@@ -92,7 +97,7 @@ private:
     uint64_t timeoutSensor;
     DataSensor dataSensor;
     ReadSensor(): hasSignalSensor(false), dataSensor({0,0}),enableLed(false),timeOnSignalLed(0),isLedOn(false),
-    timeout3wireSignal(0){
+    timeout3wireSignal(0),timeoutSensor(0),isLed4WireOn(false){
         
     }
 
