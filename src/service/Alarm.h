@@ -50,8 +50,8 @@ public:
         Rtc* rtc = Rtc::getInstance();
         Lcd* lcd = Lcd::getInstance();
         rtc->getTime(current);
-        if(current.Hour == 12 || current.Hour == 0){
-            if(current.Minute == 0 && current.Second ==0){
+        if(current.Hour == 23){
+            if(current.Minute == 30 && current.Second ==0){
                 ESP.restart();
             }
         }
@@ -61,9 +61,12 @@ public:
         }
         lastSec = current.Second;
         if(value == 0){
-            if(nextTime.Second == current.Second){
+            if((current.Second - nextTime.Second) < 5){
                 isRinging = true;
                 lcd->show(String(0),Lcd::TYPE_REMAIN_TIME_ALARM,3);
+            }
+            else{
+                remainTime =60;
             }   
         }
         else if(value > 0)  {

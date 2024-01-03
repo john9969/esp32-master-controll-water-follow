@@ -42,6 +42,7 @@ extern "C"{
         ERR_TIMEOUT_AT_02 = 19,
         ERR_TIMEOUT_AT_MAT =20,
         ERR_TIMEOUT_TOTAL = 13,
+        ERR_NUM_OF_LIST_DATA_OUT_OF_RANGE,
         NO_ERR
 
     };

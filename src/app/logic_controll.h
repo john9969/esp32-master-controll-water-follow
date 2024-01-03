@@ -65,7 +65,7 @@ private:
 };
 #endif
 LogicControl* LogicControl::_logicControl = nullptr;
-void LogicControl::run()
+void LogicControl:: run()
 {
     Alarm * alarm = Alarm::getInstance();
     if((!alarm->getIsRinging()) && (!hasStartBtn)) return;
@@ -88,13 +88,14 @@ void LogicControl::run()
         case STATE_START_GO_TO_BOTTOM:
         {
             if(isTimeoutStep(60000)){
-                httpRequest->post("step timeout at get water lever: E: ", API_POST, HttpRequest::TYPE_CRITICAL);
+                httpRequest->post("step timeout tai luc check day ", API_POST, HttpRequest::TYPE_CRITICAL);
                 setErrMeasuring(getState());
                 setState(STATE_START_GO_TO_BOTTOM);
                 break;
             }
             if(isSlaveFinishMoving()){
                 Serial.println("finish check deep");
+                httpRequest->post("hoan thanh do do sau, di len diem day", API_POST, HttpRequest::TYPE_CRITICAL);
                 setState(STATE_MOVING_TO_DAY);
                 break;
             }
@@ -115,6 +116,7 @@ void LogicControl::run()
             }
             if(isSlaveFinishMoving()){
                 this->timeStartMeasuring = millis();
+                httpRequest->post("hoan thanh di chuyen toi state: "+ String(getState()), API_POST, HttpRequest::TYPE_CRITICAL);
                 this->isFinishRemoveFirst =false;
                 switch (getState())
                 {
@@ -220,7 +222,7 @@ void LogicControl::run()
                         + " T:" + String(dataMeasuring.time)
                         + " A:" + String(this->dataMeasuring.dataSensor.angle);  
                     lcd->show(data,Lcd::TYPE_PRIVIOUS_DATA_MEASURING);
-                this->httpRequest->post("finish measuring at State: "+String(getState()) + " R: "+ String( this->dataMeasuring.dataSensor.round) + " A: " + String( this->dataMeasuring.dataSensor.angle)+ " T: " + String( this->dataMeasuring.time), API_POST,HttpRequest::TYPE_CRITICAL);
+                this->httpRequest->post("hoan thanh do toc dp (truoc nguong) at State: "+String(getState()) + " R: "+ String( this->dataMeasuring.dataSensor.round) + " A: " + String( this->dataMeasuring.dataSensor.angle)+ " T: " + String( this->dataMeasuring.time), API_POST,HttpRequest::TYPE_CRITICAL);
                 switch (getState())
                 {
                 case STATE_MEASURING_DAY:
@@ -255,7 +257,7 @@ void LogicControl::run()
                         + " A:" + String(this->dataMeasuring.dataSensor.angle);  
                     lcd->show(String(this->dataMeasuring.time),Lcd::TYPE_TIME,3);
                     lcd->show(data,Lcd::TYPE_PRIVIOUS_DATA_MEASURING);
-                    this->httpRequest->post("finish measuring at State: "+String(getState()) + " R: "+ String( this->dataMeasuring.dataSensor.round) + " A: " + String( this->dataMeasuring.dataSensor.angle)+ " T: " + String( this->dataMeasuring.time), API_POST,HttpRequest::TYPE_CRITICAL);
+                    this->httpRequest->post("finish measuring (toi nguong) at State: "+String(getState()) + " R: "+ String( this->dataMeasuring.dataSensor.round) + " A: " + String( this->dataMeasuring.dataSensor.angle)+ " T: " + String( this->dataMeasuring.time), API_POST,HttpRequest::TYPE_CRITICAL);
                     this->listDataMeasuring.push_back(this->dataMeasuring);
                     switch (getState())
                     {
@@ -290,6 +292,7 @@ void LogicControl::run()
                     lcd->show(String(this->dataMeasuring.time),Lcd::TYPE_TIME,3);
                     String data = "R:000 T:"+ String(dataMeasuring.time)+" A:000";  
                     lcd->show(data,Lcd::TYPE_PRIVIOUS_DATA_MEASURING);
+                    this->httpRequest->post("hoan thanh do toc do (toi nguong, vong =0) at State: "+String(getState()) + " R: "+ String( this->dataMeasuring.dataSensor.round) + " A: " + String( this->dataMeasuring.dataSensor.angle)+ " T: " + String( this->dataMeasuring.time), API_POST,HttpRequest::TYPE_CRITICAL);
                     switch (getState())
                     {
                     case STATE_MEASURING_DAY:
@@ -412,6 +415,7 @@ void LogicControl::setState(const State& _state){
         }
         if(isFastMeasuring) isFastMeasuring = false;
         std::vector<std::vector<String>> str_data;
+        // if(this->listDataMeasuring.size() > 7) setErrCode(ErrCode::ERR_NUM_OF_LIST_DATA_OUT_OF_RANGE);
         for(DataMeasuring dataMeasuring: this->listDataMeasuring){
             std::vector<String> element;
             String str_round = String(dataMeasuring.dataSensor.round);
@@ -426,15 +430,16 @@ void LogicControl::setState(const State& _state){
             str_data.push_back(element);
         }
         httpRequest->post(str_data, API_POST);
+        this->listDataMeasuring.clear();
         break;
-        }
+    }
     }
     int numState = int(_state);
     if(numState <= 8){
         uartSlave.send("A" + String(_state));
         uartSlave.clearBuffer();
         setOnSpeaker(3000);
-        this->httpRequest->post("finish measuring at State: "+String(getState()) + " R: "+ String( this->dataMeasuring.dataSensor.round) + " A: " + String( this->dataMeasuring.dataSensor.angle)+ " T: " + String( this->dataMeasuring.time), API_POST,HttpRequest::TYPE_CRITICAL);
+        this->httpRequest->post("hoan thanh do toc do at State: "+String(getState()) + " R: "+ String( this->dataMeasuring.dataSensor.round) + " A: " + String( this->dataMeasuring.dataSensor.angle)+ " T: " + String( this->dataMeasuring.time), API_POST,HttpRequest::TYPE_CRITICAL);
     }
     
     this->state = _state;
