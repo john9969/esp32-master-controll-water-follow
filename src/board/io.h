@@ -9,7 +9,7 @@
 #define START_BTN               35
 #define HAS_4_WIRE_SENSOR_PIN   34
 #define SPEAKER_PIN             27
-
+#define ADC_PIN                 13
 extern "C"{
     #include <stdbool.h>
     enum ERR_CODE_t{
