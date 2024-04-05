@@ -352,7 +352,7 @@ bool LogicControl::isTimeoutTotal(){
     return false;
 }
 void LogicControl::init(){
-    alarm->setMinuteAlarm(55);
+    alarm->setMinuteAlarm(50);
 }
 
 void LogicControl::setState(const State& _state){

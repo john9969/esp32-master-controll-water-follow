@@ -2,7 +2,7 @@
 #define SERVICE_HTTPREQUEST_H
 #include <iostream>
 #include <list>
-#define SERIAL_NUMBER "110"
+#define SERIAL_NUMBER "111"
 #define LOWER_VOL_THRESHOLD 22
 struct DataConfig
 {
@@ -24,7 +24,6 @@ class Config{
     virtual std::string getSn() = 0;
     virtual void hasFreChange(const int & fre ) = 0;
 };
-class UpdateDataConfig
 class UpdateConfig : public Config{
 public:
     UpdateConfig() : _config({SERIAL_NUMBER, 1, LOWER_VOL_THRESHOLD}){
@@ -33,7 +32,6 @@ public:
     ~UpdateConfig();
 private:
     DataConfig _config;
-    std::list listSubcriber;
 }
 
 

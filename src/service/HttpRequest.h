@@ -7,7 +7,7 @@
 #include "Connection.h"
 #include <vector>    
 #include <memory>
-#define WORKSTATION_ID "010"
+#define WORKSTATION_ID "011"
 #define API_GET_TIME "https://donuoctrieuduong.xyz/dev_test/get_time.php"
 #define API_POST "https://donuoctrieuduong.xyz/test/index.php/Sql/getdatafromesp8266"
 class HttpRequest {
