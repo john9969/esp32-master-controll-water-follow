@@ -19,6 +19,7 @@ public:
     void fromString(String data){
 
     }
+
     void run(){
         Time p_current;
         Lcd* lcd = Lcd::getInstance();
@@ -34,7 +35,6 @@ public:
                 if(p_current.Second <10)str_time += "0"+ String(p_current.Second);
                 else str_time += String(p_current.Second);
                 lcd->show( str_time,Lcd::TYPE_TIME);
-                //Serial.println(str_time);
                 if(lastDay != p_current.Day){
                     lastDay = p_current.Day;
                     String str_date;

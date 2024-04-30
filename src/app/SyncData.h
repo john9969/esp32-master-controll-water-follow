@@ -64,6 +64,7 @@ void SyncData::syncTime(){
     String data = httpRequest->get(API_GET_TIME);
     Time time;
     rtc->getTime(time);
+    Serial.println("sync Time");
     httpRequest->post(String(time.Hour)+":"+String(time.Minute)+" "+String(time.Day)+ "/" +String(time.Month)+",Vol: " + String(getVol()),API_POST,HttpRequest::TYPE_DEBUG);
     if(data.length()> 18){
         

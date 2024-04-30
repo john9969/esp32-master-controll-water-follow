@@ -175,7 +175,6 @@ public:
             pos = valueEnd + 1;
         }
         if(hasChange){
-            Serial.println("has change config data");
             notifyAll();
         }
         return this;

@@ -59,16 +59,13 @@ String HttpRequest::post(const std::vector<std::vector<String>>& data, const Str
     Serial.println("data post: "  + dataPost);  
     
     int httpResponseCode = http->POST(dataPost);
-    String payload="";
+    String payload= "";
     if (httpResponseCode>0) {
-        Serial.print("HTTP Response code: ");
-        Serial.println(httpResponseCode);
-        payload = http->getString();
-        Serial.println(payload);
-      }
-      else {
-        Serial.print("Error code: ");
-        Serial.println(httpResponseCode);
+        payload= http->getString();
+        Serial.print("HTTP Payload: " + payload);
+    }
+    else {
+        Serial.print("HTTP Payload: " + http->getString());
     }
     http->end();
     return payload;
@@ -93,16 +90,13 @@ String HttpRequest::post(const String& data, const String& api, const Type& type
     dataPost += data;
     Serial.println(dataPost);  
     int httpResponseCode = http->POST(dataPost);
-    String payload="";
+    String payload= "";
     if (httpResponseCode>0) {
-        Serial.print("HTTP Response code: ");
-        Serial.println(httpResponseCode);
-        payload = http->getString();
-        Serial.println(payload);
-      }
-      else {
-        Serial.print("Error code: ");
-        Serial.println(httpResponseCode);
+        payload= http->getString();
+        Serial.print("HTTP Payload: " + payload);
+    }
+    else {
+        Serial.print("HTTP Payload: " + http->getString());
     }
     http->end();
     return payload;
@@ -117,17 +111,14 @@ String HttpRequest::get(const String& api){
     http->begin(api.c_str());    
     int httpResponseCode = http->GET();
 
-  String payload = ""; 
-
-  if (httpResponseCode>0) {
-    Serial.print("HTTP Response code: ");
-    Serial.println(httpResponseCode);
-    payload = http->getString();
-  }
-  else {
-    Serial.print("Error code: ");
-    Serial.println(httpResponseCode);
-  }
+    String payload= "";
+    if (httpResponseCode>0) {
+        payload= http->getString();
+        Serial.print("HTTP Payload: " + payload);
+    }
+    else {
+        Serial.print("HTTP Payload: " + http->getString());
+    }
   http->end();
   return payload;      
 }

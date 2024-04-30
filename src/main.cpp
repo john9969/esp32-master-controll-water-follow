@@ -55,7 +55,7 @@ void setup() {
   threadRtc.setInterval(100);
   threadAlarm.onRun(&callback_alarm);
   threadAlarm.setInterval(100);
-  threadResetAlarm->setInterval(1000);
+  threadResetAlarm->setInterval(3000);
   threadResetAlarm->onRun(&callback_resetAlarm);
   threadReadSensor.onRun(&callback_read_sensor);
   threadReadSensor.setInterval(10);
@@ -137,7 +137,6 @@ void callback_alarm(){
 }
 void callback_resetAlarm(){
   ringAlarm->resetAlarm();
-  Serial.println("reseting alarm ...");
   controller.remove(threadResetAlarm);
   delete threadResetAlarm;
   threadResetAlarm = nullptr;
