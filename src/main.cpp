@@ -11,6 +11,7 @@ void callback_lcd();
 void callback_rtc();
 
 void callback_alarm();
+void callback_resetAlarm();
 void callback_connection();
 void callback_http();
 void callback_sync_data();
@@ -35,6 +36,7 @@ Thread threadLcd = Thread();
 Thread threadRtc = Thread();
 
 Thread threadAlarm = Thread();
+Thread *threadResetAlarm = new Thread();
 Thread threadConnection = Thread();
 Thread threadHttpRequest = Thread();
 Thread threadSyncData = Thread();
@@ -53,6 +55,8 @@ void setup() {
   threadRtc.setInterval(100);
   threadAlarm.onRun(&callback_alarm);
   threadAlarm.setInterval(100);
+  threadResetAlarm->setInterval(1000);
+  threadResetAlarm->onRun(&callback_resetAlarm);
   threadReadSensor.onRun(&callback_read_sensor);
   threadReadSensor.setInterval(10);
   threadSyncData.onRun(&callback_sync_data);
@@ -76,6 +80,7 @@ void setup() {
   controller.add(&threadConnection);
   
   controller.add(&threadAlarm);
+  controller.add(threadResetAlarm);
   controller.add(&threadIO);
   controller.add(&threadReadSensor);
   controller.add(&threadSyncData);
@@ -130,6 +135,14 @@ void callback_uart(){
 void callback_alarm(){
   ringAlarm->runAlarm();
 }
+void callback_resetAlarm(){
+  ringAlarm->resetAlarm();
+  Serial.println("reseting alarm ...");
+  controller.remove(threadResetAlarm);
+  delete threadResetAlarm;
+  threadResetAlarm = nullptr;
+}
+
 void callback_connection(){
   connection->checkingConnection();
 }
@@ -137,4 +150,5 @@ void callback_connection(){
 void callback_sync_data(){
   syncData.syncErr();
   syncData.syncTime();
+  syncData.syncConfig();
 }

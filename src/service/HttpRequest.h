@@ -1,13 +1,14 @@
 
-#ifndef SERVICE_HTTPREQUEST_H
-#define SERVICE_HTTPREQUEST_H
+#ifndef SERVICE_HTTP_REQUEST_H
+#define SERVICE_HTTP_REQUEST_H
 #include <Arduino.h>
 #include <HTTPClient.h>
 #include <iostream> 
-#include "Connection.h"
 #include <vector>    
 #include <memory>
-#define WORKSTATION_ID "011"
+#include "Connection.h"
+#include "config/Config.h"
+#define API_GET_CONFIG "https://donuoctrieuduong.xyz/dev_test/get_config.php?id="
 #define API_GET_TIME "https://donuoctrieuduong.xyz/dev_test/get_time.php"
 #define API_POST "https://donuoctrieuduong.xyz/test/index.php/Sql/getdatafromesp8266"
 class HttpRequest {
@@ -36,6 +37,7 @@ std::shared_ptr<HttpRequest> HttpRequest::httpRequest = nullptr;
 
 String HttpRequest::post(const std::vector<std::vector<String>>& data, const String& api){
     Connection* connection = Connection::getInstance();
+    DataConfig * config = DataConfig::getInstance();
     if(!connection->isConnected()){
         setErrCode(ERR_WIFI_LOST_CONNECT);
         return "";
@@ -47,7 +49,7 @@ String HttpRequest::post(const std::vector<std::vector<String>>& data, const Str
     String dataPost ="apikey=senddata"
                  "&keyword=";   
     dataPost += "TA";
-    dataPost += "&workstationid=" WORKSTATION_ID;
+    dataPost += "&workstationid=" + config->getSerialNumber();
     dataPost += "&data=";
     for(std::vector<String> value:data){
         for(String p_value : value){
@@ -73,6 +75,7 @@ String HttpRequest::post(const std::vector<std::vector<String>>& data, const Str
 }
 String HttpRequest::post(const String& data, const String& api, const Type& type){
     Connection* connection = Connection::getInstance();
+    DataConfig* config = DataConfig::getInstance();
     if(!connection->isConnected()){
         setErrCode(ERR_WIFI_LOST_CONNECT);
         return "";
@@ -85,7 +88,7 @@ String HttpRequest::post(const String& data, const String& api, const Type& type
                  "&keyword=";   
     if(type == TYPE_CRITICAL) dataPost += "TC";
     else if( type == TYPE_DEBUG) dataPost += "TB";
-    dataPost += "&workstationid=" WORKSTATION_ID;
+    dataPost += "&workstationid=" + config->getSerialNumber();
     dataPost += "&data=";
     dataPost += data;
     Serial.println(dataPost);  

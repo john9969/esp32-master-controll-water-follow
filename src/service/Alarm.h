@@ -1,70 +1,94 @@
 #include <Arduino.h>
 #include "board/rtc.h"
+#include "config/Config.h"
 #include <iostream>
-class Alarm {
+class Alarm : public ConfigObserver{
 private:
+    DataConfig* _dataConfig;
     static Alarm* _alarm;
-    int remainTime;
-    Time nextTime;
+    uint8_t _dayTime;
+    uint8_t _nightTime;
+    uint8_t _freDay;
+    uint8_t _freNight;
+
+    
+    int _timeSecAlarm;
     bool isRinging;
-    int frequencyPerHour;
+
+    int _minuteLeft;
     int _secondLeft;
     uint32_t totalSecond;
     Time currentTime;
-
+    bool isDay(){
+        if(_nightTime > _dayTime)
+            return (currentTime.Hour > _dayTime && currentTime.Hour < _nightTime) ? true:false;
+        else
+            return (currentTime.Hour > _nightTime && currentTime.Hour < _dayTime) ? false: true;
+    }
 public:
-    Alarm() : frequencyPerHour(1),_secondLeft(frequencyPerHour*60),isRinging(false),totalSecond(0) {
+    Alarm(DataConfig* dataConfig) : _dataConfig(dataConfig),_freDay(_dataConfig->_freDay),_freNight(_dataConfig->_freNight),_dayTime(_dataConfig->_dayTime),_nightTime(_dataConfig->_nightTime),isRinging(false),totalSecond(0) {
+        this->_timeSecAlarm =0;
+        _secondLeft = 36000;
+        _dataConfig->append(this);
     }
     void ringAlarm() const {
     }
+    
     static Alarm* getInstance() {
         if(!_alarm){
-            _alarm = new Alarm();
+            _alarm = new Alarm(DataConfig::getInstance());
         }
         return _alarm;
     }
-    void setFrequency(const uint8_t & free){
-        this->frequencyPerHour = free;
+    void hasChanged() override{
+        Serial.println("has signal change");
+        this->_freDay = _dataConfig->_freDay;
+        this->_freNight = _dataConfig->_freNight;
+        this->_dayTime = _dataConfig->_dayTime;
+        this->_nightTime = _dataConfig->_nightTime;
+        changeAlarm(_dataConfig->_minuteStart);
     }
-    void setAlarm(const Time& time) {
-        nextTime = time;
+    
+    void resetAlarm(){
+        Rtc * rtc = Rtc::getInstance();
+       if(isDay()){
+            this->_timeSecAlarm = _freDay*3600 + rtc->getSecondsPoint() - rtc->getSecond();
+        }
+        else {
+            this->_timeSecAlarm = _freNight*3600 + rtc->getSecondsPoint()  - rtc->getSecond();
+        }
+        Serial.println("reset alarm finsh, next Time point: "+ String(this->_timeSecAlarm) + ",current sec: "+ Rtc::getInstance()->getSecondsPoint());
     }
-    void setMinuteAlarm(const uint8_t & minute){
-        Time setTime = {0,minute,0,0,0,0,0};
-        setAlarm(setTime);
+    void changeAlarm(const uint8_t& minute = 55) {
+        if(isDay()){
+            this->_timeSecAlarm = _freDay*3600 + minute*60 + currentTime.Hour*3600 ;
+        }
+        else {
+            this->_timeSecAlarm = _freNight*3600 + minute*60 + currentTime.Hour*3600;
+        }
+        Serial.println("next Time location: "+ String(this->_timeSecAlarm) + ",current sec: "+ Rtc::getInstance()->getSecondsPoint());
     }
-    int getRemainTime() const {
+    int getRemainSecond(){
+        this->_secondLeft =  this->_timeSecAlarm - (currentTime.Hour*3600+ currentTime.Minute*60 + currentTime.Second);
+        return this->_secondLeft;
+    }
+    int getRemainMinute() {
+        this->_secondLeft =  this->_timeSecAlarm - (currentTime.Hour*3600+ currentTime.Minute*60 + currentTime.Second);
         return this->_secondLeft/60;
     }
     void updateRemainTime(){
         Lcd* lcd = Lcd::getInstance();
-        if((this->_secondLeft /60) != this->remainTime){
-            this->remainTime  = this->_secondLeft/60;
-            lcd->show(String((getRemainTime() > 99)? 99 : getRemainTime()),Lcd::TYPE_REMAIN_TIME_ALARM,3);
+        if((this->_secondLeft /60) != this->_minuteLeft){
+            this->_minuteLeft  = this->_secondLeft/60;
+            Serial.println("alarm: minute left: " + String(this->_minuteLeft));
+            lcd->show(String((getRemainMinute() > 99)? 99 : getRemainMinute()),Lcd::TYPE_REMAIN_TIME_ALARM,3);
         }
     }
     bool getIsRinging() const {
         return this->isRinging;
     }
-    void calculaRemainTime(){
-        uint32_t secondLeft = 0;
-        if(nextTime.Minute == currentTime.Minute){
-            this->_secondLeft =0;
-            return;
-        }
-        if(nextTime.Minute > currentTime.Minute){
-            secondLeft = (nextTime.Minute- currentTime.Minute); 
-        }
-        else {
-            secondLeft = nextTime.Minute +60 - currentTime.Minute;
-        }
-        secondLeft *= 60;
-        this->_secondLeft = secondLeft+ (frequencyPerHour-1) *60;
-        Serial.println("next min" + String(this->nextTime.Minute)+ "current: "+ String(currentTime.Minute));
-        Serial.println("remain time: " + String(this->_secondLeft));
-    }
-    void resetAlarm(){
-        
+
+    void checked(){
         this->isRinging = false;
     }
 
@@ -84,18 +108,15 @@ public:
                 ESP.restart();
             }
         }
-        // int value = nextTime.Minute - current.Minute;
-        // if(lastSec == current.Second) {
-        //     return;
-        // }
+
         int delta = currentTime.Second - lastSec;
         if(delta == 0) return;
-        Serial.println("alarm init currentsec: "+ String(currentTime.Second)+ "last: "+ String(lastSec));
-        calculaRemainTime();
+        int remainSecound = getRemainSecond();
+        Serial.println("second left: " + String(remainSecound));
         updateRemainTime();
         if(this->_secondLeft <= 0){
-            if(!isRinging)
-                isRinging = true;
+            isRinging = true;
+            resetAlarm();
         }
         
         lastSec = currentTime.Second;

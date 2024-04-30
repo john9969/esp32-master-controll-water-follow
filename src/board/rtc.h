@@ -8,15 +8,17 @@ typedef tmElements_t Time;
 class Rtc : public DS1307RTC
 {
 private:
-    Rtc():current(Time{0,01,10,1,1,1,22}){
-
-    }
+    Rtc():
+    DS1307RTC(), current(Time{0,01,10,1,1,1,22}){}
     static Rtc* rtc;
     uint8_t lastSec = 0;
     uint8_t lastDay = 0;
-    
+    uint64_t _totalSecDay =0;
     Time current;
 public:
+    void fromString(String data){
+
+    }
     void run(){
         Time p_current;
         Lcd* lcd = Lcd::getInstance();
@@ -51,6 +53,9 @@ public:
             setTime(Time{0,01,10,1,1,1,22});
         }
     }
+    uint64_t getSecondsPoint(){
+        return (this->current.Hour*3600 + this->current.Minute*60 + this->current.Second);
+    }
     static Rtc* getInstance(){
         if(!rtc){
             rtc = new Rtc();
@@ -59,6 +64,15 @@ public:
     }
     void getTime(Time& t){
         t = rtc->current;  
+    }
+    uint8_t getSecond(){
+        return rtc->current.Second;
+    }
+    uint8_t getMinute(){
+        return rtc->current.Minute;
+    }
+    uint8_t getHour(){
+        return rtc->current.Hour;
     }
     void setTime(Time t){
         rtc->write(t); 

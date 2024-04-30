@@ -9,7 +9,7 @@
 #define START_BTN               35
 #define HAS_4_WIRE_SENSOR_PIN   34
 #define SPEAKER_PIN             27
-#define ADC_PIN                 13
+#define ADC_PIN                 36
 extern "C"{
     #include <stdbool.h>
     enum ERR_CODE_t{
@@ -19,7 +19,8 @@ extern "C"{
         ERR_SENSOR_FAIL = 2,
         ERR_NON_WATER_SIGNAL = 3,
         ERR_GET_TIME_FAIL = 4,
-        ERR_MOVING_FROM_BOT_TO_DAY =5,
+        ERR_GET_DATACONFIG_FAIL =5,
+        ERR_MOVING_FROM_BOT_TO_DAY =6,
         ERR_MOVING_FROM_DAY_TO_08,
         ERR_MOVING_FROM_DAY_TO_06,
         ERR_MOVING_FROM_08_TO_06,

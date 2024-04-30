@@ -87,6 +87,8 @@ void LogicControl:: run()
             break;
         case STATE_START_GO_TO_BOTTOM:
         {
+            static bool isFinish = false;
+            static int wait  = 200;
             if(isTimeoutStep(60000)){
                 httpRequest->post("step timeout tai luc check day ", API_POST, HttpRequest::TYPE_CRITICAL);
                 setErrMeasuring(getState());
@@ -94,11 +96,18 @@ void LogicControl:: run()
                 break;
             }
             if(isSlaveFinishMoving()){
-                Serial.println("finish check deep");
-                httpRequest->post("hoan thanh do do sau, di len diem day", API_POST, HttpRequest::TYPE_CRITICAL);
-                setState(STATE_MOVING_TO_DAY);
+                isFinish =true;
+            }
+            if(!isFinish) break;
+            if(wait >0) {
+                wait--;
                 break;
             }
+            wait = 200;
+            isFinish = false;
+            Serial.println("finish check deep");
+            httpRequest->post("hoan thanh do do sau, di len diem day", API_POST, HttpRequest::TYPE_CRITICAL);
+            setState(STATE_MOVING_TO_DAY);
             break;
         }
         case STATE_MOVING_TO_DAY:
@@ -352,7 +361,6 @@ bool LogicControl::isTimeoutTotal(){
     return false;
 }
 void LogicControl::init(){
-    alarm->setMinuteAlarm(50);
 }
 
 void LogicControl::setState(const State& _state){
@@ -408,7 +416,7 @@ void LogicControl::setState(const State& _state){
     case STATE_RES:
     {
         if(alarm->getIsRinging()){
-            alarm->resetAlarm();
+            alarm->checked();
         }
         if(hasStartBtn){
             hasStartBtn = false;
