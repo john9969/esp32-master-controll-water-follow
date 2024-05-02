@@ -5,9 +5,10 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include "service/config/Config.h"
 #include "lib/lcd-iic/LiquidCrystal_I2C.h"
 #define MAXIMUM_DATA 10
-class Lcd: public LiquidCrystal_I2C
+class Lcd: public LiquidCrystal_I2C, public ConfigObserver
 {
 public:
     enum TYPE{
@@ -34,8 +35,20 @@ public:
         TYPE type;
         int length;
     };
-    Lcd(uint8_t address, uint8_t col, uint8_t row): LiquidCrystal_I2C(address, col, row){
+    Lcd(uint8_t address, uint8_t col, uint8_t row): LiquidCrystal_I2C(address, col, row), _isOnled(true){
         this->freLooping = 100;
+        DataConfig::getInstance()->append(this);
+    }
+    void hasChanged() override {
+        if (DataConfig::getInstance()->_isOnLed == this->_isOnled) return;
+        if (DataConfig::getInstance()->_isOnLed)
+        {
+            backlight();
+        }
+        else {
+            noBacklight();
+        }
+        _isOnled = DataConfig::getInstance()->_isOnLed;
     }
     void begin(){
         init();
@@ -53,6 +66,7 @@ public:
     void run();
 private:
     uint32_t freLooping;
+    bool _isOnled;
     std::vector<DataElement> listData;
     static Lcd* _lcd;
     void padLeft(String& data,const uint8_t & length);

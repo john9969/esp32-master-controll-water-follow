@@ -42,36 +42,33 @@ public:
         }
         return _alarm;
     }
-    void changeAlarm(const uint8_t& minute = 55) {
+    void changeAlarm() {
         Rtc* rtc = Rtc::getInstance();
-        this->_minuteStart = minute;
         if(isDay()){
-            this->_timeSecAlarm = (_freDay-1)*3600 + _minuteStart * 60 + rtc->getSecondsPoint() - rtc->getSecond() - rtc->getMinute()*60 ;
+            this->_timeSecAlarm = (_freDay-1)*3600 + _minuteStart * 60 - rtc->getMinute()*60 + rtc->getSecondsPoint() - rtc->getSecond() ;
         }
         else {
             this->_timeSecAlarm = (_freNight-1)*3600 + _minuteStart * 60 + rtc->getSecondsPoint() - rtc->getSecond() - rtc->getMinute()*60 ;
         }
+        if(_minuteStart < rtc->getMinute()) this->_timeSecAlarm += 3600;
         Serial.println("next Time location: "+ String(this->_timeSecAlarm) + ",current sec: "+ Rtc::getInstance()->getSecondsPoint());
     }
     void hasChanged() override{
-        Serial.println("Alarm->hasSignalChange() has signal from config");
-        this->_freDay = _dataConfig->_freDay;
-        this->_freNight = _dataConfig->_freNight;
-        this->_dayTime = _dataConfig->_dayTime;
-        this->_nightTime = _dataConfig->_nightTime;
-        changeAlarm(_dataConfig->_minuteStart);
+        if((_dataConfig->_freDay != this->_freDay) || (this->_freNight != _dataConfig->_freNight) ||
+           (this->_dayTime != _dataConfig->_dayTime) || (this->_nightTime != _dataConfig->_nightTime) || 
+           (this->_minuteStart != _dataConfig->_minuteStart)){    
+                Serial.println("Alarm->hasSignalChange() has signal from config");
+                this->_freDay = _dataConfig->_freDay;
+                this->_freNight = _dataConfig->_freNight;
+                this->_dayTime = _dataConfig->_dayTime;
+                this->_nightTime = _dataConfig->_nightTime;
+                this->_minuteStart = _dataConfig->_minuteStart;
+                changeAlarm();
+        }
     }
     
     void resetAlarm(){
-        Rtc * rtc = Rtc::getInstance();
-       if(isDay()){
-
-            this->_timeSecAlarm = (_freDay-1)*3600 + _minuteStart * 60 + rtc->getSecondsPoint() - rtc->getSecond() - rtc->getMinute()*60 ;
-        }
-        else {
-            this->_timeSecAlarm = (_freNight-1)*3600 + _minuteStart * 60 + rtc->getSecondsPoint()  - rtc->getSecond() - rtc->getMinute()*60;
-        }
-        Serial.println("reset alarm finsh, next Time point: "+ String(this->_timeSecAlarm) + ",current time h/m/s:"+ String(rtc->getHour()) + "/" + String(rtc->getMinute())+"/"+ String(rtc->getSecond()));
+        changeAlarm();
     }
     
     int getRemainSecond(){
@@ -80,14 +77,21 @@ public:
     }
     int getRemainMinute() {
         this->_secondLeft =  this->_timeSecAlarm - (currentTime.Hour*3600+ currentTime.Minute*60 + currentTime.Second);
-        return this->_secondLeft/60;
+        return (this->_secondLeft/60) +1;
     }
     void updateRemainTime(){
         Lcd* lcd = Lcd::getInstance();
-        if((this->_secondLeft /60) != this->_minuteLeft){
-            this->_minuteLeft  = this->_secondLeft/60;
+        int minuteLeft = getRemainMinute();
+        if(minuteLeft != this->_minuteLeft){
+            this->_minuteLeft  = minuteLeft;
             Serial.println("Alarm->update remain time() minute left: " + String(this->_minuteLeft));
-            lcd->show(String((getRemainMinute() > 99)? 99 : getRemainMinute()),Lcd::TYPE_REMAIN_TIME_ALARM,3);
+            if(minuteLeft > 99){
+                lcd->show("99",Lcd::TYPE_REMAIN_TIME_ALARM,3);    
+            }
+            else{
+                lcd->show(String(minuteLeft),Lcd::TYPE_REMAIN_TIME_ALARM,3);
+            }
+        
         }
     }
     bool getIsRinging() const {

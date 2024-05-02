@@ -181,7 +181,7 @@ extern "C"{
         if((millis() - speaker._timeRetainSpeaker) < speaker.timeOnspeaker){
             if(!speaker.isSpeakerActive) {
                 // Serial.println("speaker enable");
-                #if 0
+                #if 1
                 setHigh(SPEAKER_PIN);
                 #endif
                 speaker.isSpeakerActive = true;

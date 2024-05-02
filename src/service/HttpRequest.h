@@ -88,7 +88,7 @@ String HttpRequest::post(const String& data, const String& api, const Type& type
     dataPost += "&workstationid=" + config->getSerialNumber();
     dataPost += "&data=";
     dataPost += data;
-    Serial.println(dataPost);  
+    Serial.println("data post" + dataPost);  
     int httpResponseCode = http->POST(dataPost);
     String payload= "";
     if (httpResponseCode>0) {

@@ -53,9 +53,6 @@ public:
             Serial.println("earse element success");
             this->_configObserverList.erase(it);
         }
-        else {
-            Serial.println("could not find element from list");
-        }
     }
     void notifyAll() override{
         for(auto elements: this->_configObserverList){
