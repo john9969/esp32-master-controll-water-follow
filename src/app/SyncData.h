@@ -64,7 +64,7 @@ void SyncData::syncTime(){
     String data = httpRequest->get(API_GET_TIME);
     Time time;
     rtc->getTime(time);
-    httpRequest->post(String(time.Hour)+":"+String(time.Minute)+" "+String(time.Day)+ "/" +String(time.Month)+",Vol: " + String(getVol()),API_POST,HttpRequest::TYPE_DEBUG);
+    httpRequest->post(String(time.Hour)+":"+String(time.Minute)+" "+String(time.Day)+ "/" +String(time.Month)+", Vol: " + String(getVol())+ "(V)",API_POST,HttpRequest::TYPE_DEBUG);
     if(data.length()> 18){
         
         std::vector<String> listData;
