@@ -8,7 +8,7 @@
 #include <memory>
 #include "Connection.h"
 #include "config/Config.h"
-#define API_GET_CONFIG "https://donuoctrieuduong.xyz/dev_test/get_config.php?id="
+#define API_GET_CONFIG "https://donuoctrieuduong.xyz/dev_test/get_config.php?serial_number="
 #define API_GET_TIME "https://donuoctrieuduong.xyz/dev_test/get_time.php"
 #define API_POST "https://donuoctrieuduong.xyz/test/index.php/Sql/getdatafromesp8266"
 class HttpRequest {
