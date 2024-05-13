@@ -50,7 +50,7 @@ public:
         else {
             this->_timeSecAlarm = (_freNight-1)*3600 + _minuteStart * 60 + rtc->getSecondsPoint() - rtc->getSecond() - rtc->getMinute()*60 ;
         }
-        if(_minuteStart < rtc->getMinute()) this->_timeSecAlarm += 3600;
+        if(_minuteStart <= rtc->getMinute()) this->_timeSecAlarm += 3600;
         Serial.println("next Time location: "+ String(this->_timeSecAlarm) + ",current sec: "+ Rtc::getInstance()->getSecondsPoint());
     }
     void hasChanged() override{
@@ -116,7 +116,7 @@ public:
         rtc->getTime(currentTime);
         
         if(currentTime.Hour == 23){
-            if(currentTime.Minute == 30 && currentTime.Second ==0){
+            if(currentTime.Minute == 30 && currentTime.Second == 0){
                 ESP.restart();
             }
         }

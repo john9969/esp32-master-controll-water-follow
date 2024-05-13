@@ -34,7 +34,7 @@ void SyncData::syncConfig(){
     Alarm * alarm = Alarm::getInstance();
     DataConfig* config = DataConfig::getInstance();
     if(alarm->getIsRinging() || hasStartBtn) return;
-    if( _coutdown_syncConfig< 2) {
+    if( _coutdown_syncConfig< 10) {
         _coutdown_syncConfig++;
         return;
     }

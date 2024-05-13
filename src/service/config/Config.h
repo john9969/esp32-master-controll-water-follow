@@ -6,7 +6,7 @@
 #include <string>
 #define EPSILON 0.00001f
 #define IS_EQUAL(a,b) ((std::fabs(a-b) < EPSILON) ? true: false)
-#define SERIAL_NUMBER "113"
+#define SERIAL_NUMBER "013"
 #define DEFAULT_MULTI_ADC 0.008057f
 #define DEFAULT_OFFSET_ADC 0.001f
 #define LOWER_VOL_THRESHOLD 0.00f
