@@ -133,6 +133,7 @@ void callback_uart(){
 }
 
 void callback_alarm(){
+  //note
   ringAlarm->runAlarm();
 }
 void callback_resetAlarm(){
