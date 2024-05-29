@@ -126,6 +126,12 @@ void callback_uart(){
     else if(data.startsWith("reset")){
       ESP.restart();
     }
+    else if (data.startsWith("done measuring")){
+      
+    }
+    else if(data.startsWith("reset alarm")){
+      Alarm::getInstance()->resetAlarm();
+    }
     else if(data.startsWith("slave")){
       // uartSlave.send("A");
     }

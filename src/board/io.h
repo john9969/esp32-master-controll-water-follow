@@ -74,6 +74,7 @@ extern "C"{
     static void setOnSpeaker(uint16_t timeOn);
     static void speakerLoop();
     void checkBtn(){
+        #if 0
         static bool oldState = true;
         bool currentState = getDigitalState(START_BTN);
         if(!currentState){
@@ -81,7 +82,7 @@ extern "C"{
                 oldState = currentState;
                 return;
             }
-            //Serial.println("btn press");
+            Serial.println("btn press");
             hasStartBtn = true;
         }
         else{
@@ -89,6 +90,7 @@ extern "C"{
             //Serial.println("btn release");
             oldState = currentState;
         }
+        #endif
     }
     int getErrCode(std::vector<ErrCode>& _errCode){
         _errCode = err;
@@ -181,7 +183,7 @@ extern "C"{
         if((millis() - speaker._timeRetainSpeaker) < speaker.timeOnspeaker){
             if(!speaker.isSpeakerActive) {
                 // Serial.println("speaker enable");
-                #if 1
+                #if 0
                 setHigh(SPEAKER_PIN);
                 #endif
                 speaker.isSpeakerActive = true;

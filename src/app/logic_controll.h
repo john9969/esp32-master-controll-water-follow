@@ -1,5 +1,6 @@
 #ifndef APP_LOGIC_CONTROL_H
 #define APP_LOGIC_CONTROL_H
+#define DEBUG 1
 #include "ReadSensor.h"
 #include "service/Alarm.h"
 #include "service/HttpRequest.h"
@@ -21,7 +22,7 @@ public:
         STATE_MEASURING_04      = 12,
         STATE_MEASURING_02      = 13,
         STATE_MEASURING_MAT     = 14,
-        STATE_RES               = 15,
+        STATE_RES               = 15,   
         STATE_ERR               = 16
 
     };
@@ -70,12 +71,12 @@ void LogicControl:: run()
     Alarm * alarm = Alarm::getInstance();
     if((!alarm->getIsRinging()) && (!hasStartBtn)) return;
     if(getState() != STATE_RES && getState() != STATE_ERR){
-            if(isTimeoutTotal()){
-                Serial.println("total timeout: C:" + String(millis())+ "begin: "+ String(this->timeoutTotal));
-                httpRequest->post("total timeout run out at state: " + String(getState()), API_POST, HttpRequest::TYPE_CRITICAL);
-                setErrMeasuring(getState());
-                setState(STATE_ERR);
-            }
+        if(isTimeoutTotal()){
+            Serial.println("total timeout: C:" + String(millis())+ "begin: "+ String(this->timeoutTotal));
+            httpRequest->post("total timeout run out at state: " + String(getState()), API_POST, HttpRequest::TYPE_CRITICAL);
+            setErrMeasuring(getState());
+            setState(STATE_ERR);
+        }
     }
     
     switch (getState())
@@ -87,7 +88,7 @@ void LogicControl:: run()
             break;
         case STATE_START_GO_TO_BOTTOM:
         {
-            static bool isFinish = false;
+            static bool isFinish = false; //to distingwish begin and end of measuring process
             static int wait  = 200;
             if(isTimeoutStep(60000)){
                 httpRequest->post("step timeout tai luc check day ", API_POST, HttpRequest::TYPE_CRITICAL);
@@ -418,6 +419,7 @@ void LogicControl::setState(const State& _state){
         if(alarm->getIsRinging()){
             alarm->checked();
         }
+        
         if(hasStartBtn){
             hasStartBtn = false;
         }
@@ -515,16 +517,20 @@ void LogicControl::setErrMeasuring(const LogicControl::State& state){
     default:
         break;
     }
-    
     setErrCode(this->errMeasuring);
 }
-bool LogicControl::isSlaveFinishMoving(){
+
+bool LogicControl::isSlaveFinishMoving(){//???
     String data ="";
+    #if DEBUG
+        return true;
+    #else
     if(uartSlave.read(data)){
         Serial.println("data from slave: " + data);
         return data.startsWith("*")? true : false;
     }
     return false;
+    #endif
 }
 void LogicControl::padLeft(String& data, const uint8_t& length){
     if(data.length() >= length) return;
