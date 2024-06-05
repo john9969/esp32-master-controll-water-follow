@@ -7,10 +7,10 @@
 #include <thread>
 #include <chrono>
 #include "board/dcom.h"
-// #define WIFI_ID     "Minh Tuan"
-// #define WIFI_PASS   "j12345678"
-#define WIFI_ID     "Cong Ca Phe"
-#define WIFI_PASS   "congcaphe.com"
+#define WIFI_ID     "Minh Tuan"
+#define WIFI_PASS   "j12345678"
+// #define WIFI_ID     "Cong Ca Phe"
+// #define WIFI_PASS   "congcaphe.com"
 class Connection
 {
 private:

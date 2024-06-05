@@ -132,8 +132,29 @@ void callback_uart(){
     else if(data.startsWith("reset alarm")){
       Alarm::getInstance()->resetAlarm();
     }
-    else if(data.startsWith("slave")){
-      // uartSlave.send("A");
+    else if(data.startsWith("slave1")){
+      uartSlave.send("A1");
+    }
+    else if(data.startsWith("slave2")){
+      uartSlave.send("A2");
+    }
+    else if(data.startsWith("slave3")){
+      uartSlave.send("A3");
+    }
+    else if(data.startsWith("slave4")){
+      uartSlave.send("A4");
+    }
+    else if(data.startsWith("slave5")){
+      uartSlave.send("A5");
+    }
+    else if(data.startsWith("slave6")){
+      uartSlave.send("A6");
+    }
+    else if(data.startsWith("slave7")){
+      uartSlave.send("A7");
+    }
+    else if(data.startsWith("slave8")){
+      uartSlave.send("A8");
     }
   }
 }

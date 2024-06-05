@@ -87,7 +87,7 @@ public:
         else {
             this->_secondLeft = compareValue;
         }
-        Serial.println("remain second: " +String(this->_secondLeft));
+        // Serial.println("remain second: " +String(this->_secondLeft));
         return this->_secondLeft;
     }
     int getRemainMinute() {

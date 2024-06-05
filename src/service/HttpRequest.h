@@ -8,7 +8,7 @@
 #include <memory>
 #include "Connection.h"
 #include "config/Config.h"
-#define DEBUG 1
+#define DEBUG 0
 #define API_GET_CONFIG "https://donuoctrieuduong.xyz/dev_test/get_config.php?serial_number="
 
 #ifdef DEBUG

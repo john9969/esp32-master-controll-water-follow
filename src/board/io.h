@@ -14,38 +14,37 @@ extern "C"{
     #include <stdbool.h>
     enum ERR_CODE_t{
         
-        ERR_WIFI_LOST_CONNECT=0,
-        ERR_TIMEOUT_RUNING = 1,
-        ERR_SENSOR_FAIL = 2,
-        ERR_NON_WATER_SIGNAL = 3,
-        ERR_GET_TIME_FAIL = 4,
-        ERR_GET_DATACONFIG_FAIL =5,
-        ERR_MOVING_FROM_BOT_TO_DAY =6,
-        ERR_MOVING_FROM_DAY_TO_08,
-        ERR_MOVING_FROM_DAY_TO_06,
-        ERR_MOVING_FROM_08_TO_06,
-        ERR_MOVING_FROM_06_TO_04,
-        ERR_MOVING_FROM_04_TO_02,
-        ERR_MOVING_FROM_02_TO_MAT,
-        ERR_MOVING_FROM_MAT_TO_RES,
-        ERR_NON_RESPONSE_AT_STEP_TO_BOT=6,
-        ERR_NON_RESPONSE_AT_STEP_TO_08=7,
-        ERR_NON_RESPONSE_AT_STEP_TO_06=8,
-        ERR_NON_RESPONSE_AT_STEP_TO_04=9,
-        ERR_NON_RESPONSE_AT_STEP_TO_02=10,
-        ERR_NON_RESPONSE_AT_STEP_TO_MAT=11,
-        ERR_NON_RESPONSE_AT_STEP_TO_RES=12,
-        ERR_MOVING_FROM_RES_TO_BOTTOM = 14,
-        ERR_TIMEOUT_AT_BOT= 15,
-        ERR_TIMEOUT_AT_08 =16,
-        ERR_TIMEOUT_AT_06 =17,
-        ERR_TIMEOUT_AT_04 =18,
-        ERR_TIMEOUT_AT_02 = 19,
-        ERR_TIMEOUT_AT_MAT =20,
-        ERR_TIMEOUT_TOTAL = 13,
-        ERR_NUM_OF_LIST_DATA_OUT_OF_RANGE,
+        ERR_WIFI_LOST_CONNECT       = 0,
+        ERR_TIMEOUT_RUNING          = 1,
+        ERR_SENSOR_FAIL             = 2,
+        ERR_NON_WATER_SIGNAL        = 3,
+        ERR_GET_TIME_FAIL           = 4,
+        ERR_GET_DATACONFIG_FAIL     = 5,
+        ERR_MOVING_FROM_BOT_TO_DAY  = 6,
+        ERR_MOVING_FROM_DAY_TO_08   = 7,
+        ERR_MOVING_FROM_DAY_TO_06   = 8,
+        ERR_MOVING_FROM_08_TO_06    = 9,
+        ERR_MOVING_FROM_06_TO_04    =10 ,
+        ERR_MOVING_FROM_04_TO_02    =11,   
+        ERR_MOVING_FROM_02_TO_MAT   =12,
+        ERR_MOVING_FROM_MAT_TO_RES  =13,
+        ERR_NON_RESPONSE_AT_STEP_TO_BOT =14,
+        ERR_NON_RESPONSE_AT_STEP_TO_08  =15,
+        ERR_NON_RESPONSE_AT_STEP_TO_06  =16,
+        ERR_NON_RESPONSE_AT_STEP_TO_04  =17,
+        ERR_NON_RESPONSE_AT_STEP_TO_02  =18,
+        ERR_NON_RESPONSE_AT_STEP_TO_MAT =19,
+        ERR_NON_RESPONSE_AT_STEP_TO_RES =20,
+        ERR_MOVING_FROM_RES_TO_BOTTOM   =21,
+        ERR_TIMEOUT_AT_BOT              =22,
+        ERR_TIMEOUT_AT_08               =23,
+        ERR_TIMEOUT_AT_06               =24,
+        ERR_TIMEOUT_AT_04               =25,
+        ERR_TIMEOUT_AT_02               =26,
+        ERR_TIMEOUT_AT_MAT              =27,
+        ERR_TIMEOUT_TOTAL               =28,
+        ERR_NUM_OF_LIST_DATA_OUT_OF_RANGE = 29,
         NO_ERR
-
     };
     typedef struct Speaker{
         uint16_t timeOnspeaker = 0;
@@ -74,7 +73,7 @@ extern "C"{
     static void setOnSpeaker(uint16_t timeOn);
     static void speakerLoop();
     void checkBtn(){
-        #if 0
+        #if 1
         static bool oldState = true;
         bool currentState = getDigitalState(START_BTN);
         if(!currentState){
@@ -183,7 +182,7 @@ extern "C"{
         if((millis() - speaker._timeRetainSpeaker) < speaker.timeOnspeaker){
             if(!speaker.isSpeakerActive) {
                 // Serial.println("speaker enable");
-                #if 0
+                #if 1
                 setHigh(SPEAKER_PIN);
                 #endif
                 speaker.isSpeakerActive = true;

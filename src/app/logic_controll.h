@@ -1,6 +1,6 @@
 #ifndef APP_LOGIC_CONTROL_H
 #define APP_LOGIC_CONTROL_H
-#define DEBUG 1
+#define DEBUG 0
 #include "ReadSensor.h"
 #include "service/Alarm.h"
 #include "service/HttpRequest.h"
