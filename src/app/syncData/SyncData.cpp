@@ -1,16 +1,5 @@
-#include "logic_controll.h"
-#include "board/read_adc.h"
-#include "service/config/Config.h"
-class SyncData{
-public:
-    void syncErr();
-    void syncTime();
-    void syncConfig();
-private:
-    int _coutdown_syncTime;
-    int _coutdown_syncConfig;
-    
-};
+#include "SyncData.h"
+
 void SyncData::syncErr(){
     Lcd* lcd = Lcd::getInstance();
     if(hasErrChanged){

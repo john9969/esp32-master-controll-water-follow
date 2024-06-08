@@ -1,4 +1,4 @@
-#include "app/SyncData.h"
+#include "app/syncData/SyncData.h"
 #include "lib/thread/Thread.h"
 #include "lib/thread/ThreadController.h"
 
@@ -71,9 +71,7 @@ void setup() {
   logicControl->init();
   readSensor->init();
   uartSlave.begin();
-  // pinMode(9,INPUT_PULLUP);
-  // pinMode(10,OUTPUT);
-  // Serial1.begin(115200);
+
   controller.add(&threadUart);
   controller.add(&threadRtc);
   controller.add(&threadLcd);
@@ -160,7 +158,6 @@ void callback_uart(){
 }
 
 void callback_alarm(){
-  //note
   ringAlarm->runAlarm();
 }
 void callback_resetAlarm(){

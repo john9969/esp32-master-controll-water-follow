@@ -1,47 +1,15 @@
+#include "HttpRequest.h"
 
-#ifndef SERVICE_HTTP_REQUEST_H
-#define SERVICE_HTTP_REQUEST_H
-#include <Arduino.h>
-#include <HTTPClient.h>
-#include <iostream> 
-#include <vector>    
-#include <memory>
-#include "Connection.h"
-#include "config/Config.h"
-#define DEBUG 0
-#define API_GET_CONFIG "https://donuoctrieuduong.xyz/dev_test/get_config.php?serial_number="
+std::shared_ptr<HttpRequest> HttpRequest::_httpRequest = nullptr;
+HttpRequest::HttpRequest(){
 
-#ifdef DEBUG
-#define API_GET_TIME "https://donuoctrieuduong.xyz/dev_test/get_time_test.php"
-#else
-#define API_GET_TIME "https://donuoctrieuduong.xyz/dev_test/get_time.php"
-#endif // DEBUG
-
-#define API_POST "https://donuoctrieuduong.xyz/test/index.php/Sql/getdatafromesp8266"
-class HttpRequest {
-public:
-    enum Type{
-        TYPE_DEBUG  = 0,
-        TYPE_CRITICAL
-    };
-    String post(const std::vector<std::vector<String>>& data, const String& api);
-    String post(const String& dataDebug, const String& api, const Type& type);
-    String get(const String& API);
-    static std::shared_ptr<HttpRequest> getInstance(){
-        if(!httpRequest){
-            httpRequest = std::shared_ptr<HttpRequest>(new HttpRequest());
-        }
-        return httpRequest;
+}
+std::shared_ptr<HttpRequest> HttpRequest::getInstance(){
+    if(!_httpRequest){
+        _httpRequest = std::shared_ptr<HttpRequest>(new HttpRequest());
     }
-private:
-    HttpRequest(){
-
-    }
-    static std::shared_ptr<HttpRequest> httpRequest;
-};
-#endif
-std::shared_ptr<HttpRequest> HttpRequest::httpRequest = nullptr;
-
+    return _httpRequest;
+}
 String HttpRequest::post(const std::vector<std::vector<String>>& data, const String& api){
     Connection* connection = Connection::getInstance();
     DataConfig * config = DataConfig::getInstance();
@@ -87,11 +55,10 @@ String HttpRequest::post(const String& data, const String& api, const Type& type
     std::unique_ptr<HTTPClient> http(new HTTPClient());
     http->begin(api.c_str());    
     http->addHeader("Content-Type", "application/x-www-form-urlencoded");
-    //String httpRequestData = "apikey=senddata&keyword=TA&workstationid=010&data=100'120'180' 060'090'090'";
-    String dataPost ="apikey=senddata"
-                 "&keyword=";   
-    if(type == TYPE_CRITICAL) dataPost += "TC";
-    else if( type == TYPE_DEBUG) dataPost += "TB";
+    String dataPost =   "apikey=senddata"
+                        "&keyword=";   
+    if(type == TYPE_CRITICAL) dataPost +=       "TC";
+    else if( type == TYPE_DEBUG) dataPost +=    "TB";
     dataPost += "&workstationid=" + config->getSerialNumber();
     dataPost += "&data=";
     dataPost += data;
@@ -129,4 +96,3 @@ String HttpRequest::get(const String& api){
   http->end();
   return payload;      
 }
-
