@@ -2,13 +2,17 @@
 #define SERVICE_WIFI_H
 #include <Arduino.h>
 #include <WiFi.h>
+#include <WiFiMulti.h>
 #include "board/rtc.h"
 #include <math.h>
 #include <thread>
 #include <chrono>
 #include "board/dcom.h"
-#define WIFI_ID     "Minh Tuan"
-#define WIFI_PASS   "j12345678"
+#define WIFI_ID_1     "Minh Tuan"
+#define WIFI_PASS_1   "j12345678"
+#define WIFI_ID_2     "Minh Tuan"
+#define WIFI_PASS_2   "j12345678"
+
 // #define WIFI_ID     "Cong Ca Phe"
 // #define WIFI_PASS   "congcaphe.com"
 class Connection
@@ -38,6 +42,7 @@ public:
                this->threadConnection.join();
           }         
      }
+     
      void checkingConnection();
 };
 Connection* Connection::connection = nullptr;
@@ -45,7 +50,7 @@ Connection* Connection::connection = nullptr;
 void Connection::init(){
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
-    WiFi.begin(WIFI_ID, WIFI_PASS);
+    WiFi.begin(WIFI_ID_1, WIFI_PASS_1);
     WiFi.setAutoConnect(true);
     WiFi.setAutoReconnect(true);
     _isConnected = false;
@@ -56,13 +61,6 @@ void Connection::checkingConnection(){
      Time time;
      Rtc* rtc = Rtc::getInstance();
      rtc->getTime(time);
-     if(time.Hour == 3 && time.Minute == 0&& time.Second == 0){
-          std::this_thread::sleep_for(std::chrono::seconds(1));
-          this->timeoutConnection = millis();
-          std::thread threadReconnect(&dcomReset);
-          threadReconnect.join();
-          Serial.println("disconnect wifi");
-     }
      if(WiFi.status() ==  WL_CONNECTED){
           this->timeoutConnection = millis();
           if(!isConnected()){
