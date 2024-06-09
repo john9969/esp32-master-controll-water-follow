@@ -22,7 +22,7 @@
 #define DEFAULT_MINUTE_START 55
 #define DEFAULT_FRE_DAY 1
 #define DEFAULT_FRE_NIGHT 1
-
+#define log(data) Serial.print(data)
 class ConfigObserver{
 public:
     virtual ~ConfigObserver(){};

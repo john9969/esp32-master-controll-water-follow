@@ -1,11 +1,11 @@
+#ifndef ALARM__H
+#define ALARM__H
 #include <Arduino.h>
 #include <iostream>
 #include "../../board/rtc/Rtc.h"
 #include "../config/Config.h"
 #define TOTAL_TIME_PER_DAY 86399UL
 #define TIME_RESET_MACHINE_POINT 30
-#ifndef ALARM__H
-#define ALARM__H
 
 class Alarm : public ConfigObserver{
 private:

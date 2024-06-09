@@ -9,7 +9,6 @@ void dcomReset(){
         case Dcom_State_INIT_RESET:
             setHigh(RESET_DCOM_PIN);
             timeoutReset = millis();
-            setErrCode(ErrCode::ERR_WIFI_LOST_CONNECT);
             dcomState = Dcom_State_RESET;
             break;
         case Dcom_State_RESET:

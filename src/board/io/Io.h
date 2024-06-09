@@ -18,7 +18,7 @@ extern "C" {
     #include <stdbool.h>
     
     enum ERR_CODE_t{
-        ERR_WIFI_LOST_CONNECT       = 0,
+        ERR_WIFI_1_LOST_CONNECT     = 0,
         ERR_TIMEOUT_RUNING          = 1,
         ERR_SENSOR_FAIL             = 2,
         ERR_NON_WATER_SIGNAL        = 3,
@@ -48,6 +48,9 @@ extern "C" {
         ERR_TIMEOUT_AT_MAT              =27,
         ERR_TIMEOUT_TOTAL               =28,
         ERR_NUM_OF_LIST_DATA_OUT_OF_RANGE = 29,
+        ERR_WIFI_1_SIGNAL_WEAK          =30,
+        ERR_WIFI_2_LOST_CONNECT         =31,
+        ERR_WIFI_2_SIGNAL_WEAK          =32,
         NO_ERR
     };
     typedef enum ERR_CODE_t ErrCode;
@@ -63,6 +66,15 @@ extern "C" {
     extern bool hasStartBtn;
     extern bool hasErrChanged;
     extern std::vector<ErrCode> err;
+    /*
+    @return: find out/not: 1/0
+    @brief: find has err or not 
+     */
+    bool findErrCode(const ErrCode& errCode);
+    /*
+    @return: num of err
+    @brief: get total error code 
+     */
     
     int getErrCode(std::vector<ErrCode>& errCode);
     void setErrCode(ErrCode errCode);

@@ -9,6 +9,14 @@ int getErrCode(std::vector<ErrCode>& errCode){
     errCode = err;
     return errCode.size();
 }
+bool findErrCode(const ErrCode& errCode){
+    int length = err.size();
+    if(length <= 0) return false;
+    for(auto it: err){
+        if(it == errCode) return true;
+    }
+    return false;
+}
 void setErrCode(ErrCode errCode){
     int length = err.size();
     if(length <= 0){
