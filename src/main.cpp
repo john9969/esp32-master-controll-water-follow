@@ -15,6 +15,7 @@ void callback_resetAlarm();
 void callback_connection();
 void callback_http();
 void callback_sync_data();
+void callback_ota();
 ThreadController controller = ThreadController();
 LogicControl* logicControl = LogicControl::getInstance();
 ReadSensor* readSensor = ReadSensor::getInstance();
@@ -29,16 +30,15 @@ Connection * connection = Connection::getInstance();
 
 Thread threadLogicControl = Thread();
 Thread threadReadSensor = Thread();
-Thread threadSyncServer = Thread();
 
 Thread threadIO = Thread();
 Thread threadLcd = Thread();
 Thread threadRtc = Thread();
+Thread threadOta = Thread();
 
 Thread threadAlarm = Thread();
 Thread *threadResetAlarm = new Thread();
 Thread threadConnection = Thread();
-Thread threadHttpRequest = Thread();
 Thread threadSyncData = Thread();
 Thread threadUart = Thread();
 void setup() {
@@ -55,6 +55,8 @@ void setup() {
   threadRtc.setInterval(100);
   threadAlarm.onRun(&callback_alarm);
   threadAlarm.setInterval(100);
+  threadOta.setInterval(SYNC_OTA);
+  threadOta.onRun(callback_ota);
   threadResetAlarm->setInterval(3000);
   threadResetAlarm->onRun(&callback_resetAlarm);
   threadReadSensor.onRun(&callback_read_sensor);
@@ -76,7 +78,8 @@ void setup() {
   controller.add(&threadRtc);
   controller.add(&threadLcd);
   controller.add(&threadConnection);
-  
+  controller.add(&threadOta);
+
   controller.add(&threadAlarm);
   controller.add(threadResetAlarm);
   controller.add(&threadIO);
@@ -175,4 +178,7 @@ void callback_sync_data(){
   syncData.syncErr();
   syncData.syncTime();
   syncData.syncConfig();
+}
+void callback_ota(){
+  syncData.syncOta();
 }

@@ -5,7 +5,17 @@ Rtc::Rtc(): DS1307RTC(), _current(Time{0,01,10,1,1,1,22}){
 void Rtc::fromString(String data){
 
 }
-
+/**
+ * @brief: get string Rtc
+ * @data: DD/MM/YY HH/MM/SS
+ * @return: -1: read false, 1: read true
+ */
+int8_t Rtc::toString(String& data){
+    Time p_current;
+    if(!read(p_current)) return -1;
+    data += String(p_current.Year);
+    return -1;
+}
 void Rtc::run(){
     Time p_current;
     Lcd* lcd = Lcd::getInstance();

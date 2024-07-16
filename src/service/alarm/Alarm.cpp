@@ -54,8 +54,9 @@ void Alarm::resetAlarm(){
 
 int Alarm::getRemainSecond(){
     Rtc* rtc = Rtc::getInstance();
+    std::shared_ptr<HttpRequest> http = HttpRequest::getInstance();
     int compareValue = this->_timeSecAlarm - rtc->getSecondsPoint();
-    if(compareValue <  0){
+    if(compareValue <  -10){
         this->_secondLeft = TOTAL_TIME_PER_DAY + compareValue;
         Serial.println("alarm: next day, use other fomular to caculate secondLeft: "+String(this->_secondLeft));
     }

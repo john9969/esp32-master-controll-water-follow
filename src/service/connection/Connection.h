@@ -3,15 +3,17 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <math.h>
+#include <WiFiMulti.h>
 
 #include "../../board/rtc/Rtc.h"
 #include "../../board/dcom/Dcom.h"
 #include "../../board/io/Io.h"
-#define WIFI_ID_1     "Minh Tuan"
-#define WIFI_PASS_1   "j12345678"
-#define WIFI_ID_2     "Phuc Long"
-#define WIFI_PASS_2   "Luckytea"
+#define WIFI_ID_1     "Thuyen2"
+#define WIFI_PASS_1   "0363862128"
+#define WIFI_ID_2     "Minh Tuan"
+#define WIFI_PASS_2   "j12345678"
 #define TIME_MAIN_WIFI_RECONNECT 2
+#define TIME_OUT_MULTI_WIFI  12
 class Connection
 {
 private:
@@ -33,6 +35,9 @@ private:
      unsigned long _timeoutConnection;
      uint8_t _timesMainWifiReconnect;
      static Connection* _connection;
+private:
+     WiFiMulti wifiMulti;
+     int _isTimeout;
 public:
      static Connection* getInstance();
      Connection();

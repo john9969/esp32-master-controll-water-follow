@@ -7,12 +7,23 @@
 
 #define DEBUG 0
 #define SPEAKER_ENABLE 1
-#define BTN_ENABLE 1
+#define BTN_ENABLE 0
 #define BY_PASS_SLAVE 1
+#define SYNC_BUG_ONLINE 1
+
+#define WIFI_ID_1     "Thuyen2"
+#define WIFI_PASS_1   "0363862128"
+#define WIFI_ID_2     "Minh Tuan"
+#define WIFI_PASS_2   "j12345678"
+#define TIME_MAIN_WIFI_RECONNECT 2
+#define TIME_OUT_MULTI_WIFI  12
 
 #define EPSILON 0.00001f
 #define IS_EQUAL(a,b) ((std::fabs(a-b) < EPSILON) ? true: false)
-#define SERIAL_NUMBER "011"
+#define SERIAL_NUMBER "013"
+#define VERSION "ver1.1.0"
+#define TEST_NEW_FW 1
+
 #define DEFAULT_MULTI_ADC 0.008057f
 #define DEFAULT_OFFSET_ADC 0.001f
 #define LOWER_VOL_THRESHOLD 0.00f

@@ -23,6 +23,7 @@ public:
     uint8_t getSecond();
     uint8_t getMinute();
     uint8_t getHour();
+    int8_t toString(String& data);
     void setTime(Time t);
 };
 

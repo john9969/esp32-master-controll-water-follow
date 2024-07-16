@@ -41,6 +41,12 @@ void SyncData::syncConfig(){
     }
     _coutdown_syncConfig=0;
 }
+void SyncData::syncOta(){
+    Alarm * alarm = Alarm::getInstance();
+    if(alarm->getIsRinging() || hasStartBtn) return;
+    OtaController::getInstance()->run();
+}
+
 void SyncData::syncTime(){
     Rtc* rtc = Rtc::getInstance();
     Alarm * alarm = Alarm::getInstance();
@@ -84,4 +90,9 @@ void SyncData::syncTime(){
         setErrCode(ErrCode::ERR_GET_TIME_FAIL);
     }
     _coutdown_syncTime=0;
+}
+void SyncData::syncBugOnline(){
+#if SYNC_BUG_ONLINE
+    
+#endif
 }
