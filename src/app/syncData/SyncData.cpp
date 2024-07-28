@@ -22,6 +22,10 @@ void SyncData::syncConfig(){
     Rtc* rtc = Rtc::getInstance();
     Alarm * alarm = Alarm::getInstance();
     DataConfig* config = DataConfig::getInstance();
+    OtaController* otaController = OtaController::getInstance();
+    if(otaController->getState() != OtaController::STATE_CHECK_AVAILABLE &&
+       otaController->getState() != OtaController::STATE_RES ) 
+        return;
     if(alarm->getIsRinging() || hasStartBtn) return;
     if( _coutdown_syncConfig< 11) {
         _coutdown_syncConfig++;
@@ -42,15 +46,21 @@ void SyncData::syncConfig(){
     _coutdown_syncConfig=0;
 }
 void SyncData::syncOta(){
-    Alarm * alarm = Alarm::getInstance();
-    if(alarm->getIsRinging() || hasStartBtn) return;
+#if ENABLE_OTA
+    // Alarm * alarm = Alarm::getInstance();
+    // if(alarm->getIsRinging() || hasStartBtn) return;
     OtaController::getInstance()->run();
+#endif
 }
 
 void SyncData::syncTime(){
     Rtc* rtc = Rtc::getInstance();
     Alarm * alarm = Alarm::getInstance();
+    OtaController* otaController = OtaController::getInstance();
     if(alarm->getIsRinging() || hasStartBtn) return;
+    if(otaController->getState() != OtaController::STATE_CHECK_AVAILABLE &&
+       otaController->getState() != OtaController::STATE_RES ) 
+        return;
     if( _coutdown_syncTime< 10) {
         _coutdown_syncTime++;
         return;
@@ -59,7 +69,7 @@ void SyncData::syncTime(){
     String data = httpRequest->get(API_GET_TIME);
     Time time;
     rtc->getTime(time);
-    httpRequest->post(String(time.Hour)+":"+String(time.Minute)+" "+String(time.Day)+ "/" +String(time.Month)+", Vol: " + String(getVol())+ "(V)",API_POST,HttpRequest::TYPE_DEBUG);
+    httpRequest->post(String(time.Hour)+":"+String(time.Minute)+" "+String(time.Day)+ "/" +String(time.Month)+ ", Version:" VERSION ", Vol: " + String(getVol())+ "(V)",API_POST,HttpRequest::TYPE_DEBUG);
     if(data.length()> 18){
         
         std::vector<String> listData;
@@ -82,7 +92,9 @@ void SyncData::syncTime(){
             current.Day = listData.at(3).toInt();
             current.Month = listData.at(4).toInt();
             current.Year = listData.at(5).toInt();
+#if SYNC_TIME_ONLINE
             rtc->setTime(current);
+#endif
         }
         removeErrCode(ErrCode::ERR_GET_TIME_FAIL);
     }

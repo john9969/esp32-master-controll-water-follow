@@ -5,7 +5,6 @@
 #include "../../board/rtc/Rtc.h"
 #include "../httpRequest/HttpRequest.h"
 #include "../config/Config.h"
-#define TOTAL_TIME_PER_DAY 86399UL
 #define TIME_RESET_MACHINE_POINT 30
 
 class Alarm : public ConfigObserver{

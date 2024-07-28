@@ -3,7 +3,12 @@ ConfigUart uartSensor(COM_PORT_SENSOR);
 ConfigUart uartSlave(COM_PORT_SLAVE,9600);
 ConfigUart uartDebug(COM_PORT_DEBUG);
 void ConfigUart::begin(){
-    this->_serial->begin(baud);
+    if(this->comport == COM_PORT_SLAVE) {
+        this->_serial->begin(baud, SERIAL_8N1, 14, 5);
+    }
+    else {
+        this->_serial->begin(baud);
+    }
 }
 void ConfigUart::removeLast(String &  data){
     int length = data.length();

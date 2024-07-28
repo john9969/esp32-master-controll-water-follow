@@ -1,9 +1,16 @@
 #include "LoginControl.h"
-
+#include "../../service/ota/otaController.h"
 LogicControl* LogicControl::_logicControl = nullptr;
 void LogicControl:: run()
 {
     Alarm * alarm = Alarm::getInstance();
+    OtaController * ota = OtaController::getInstance();
+    if((ota->getState() != OtaController::STATE_CHECK_AVAILABLE) &&
+       (ota->getState() != OtaController::STATE_RES)){
+        alarm->checked();
+        if(hasStartBtn) hasStartBtn = false;
+        return;
+    }
     if((!alarm->getIsRinging()) && (!hasStartBtn)) return;
     if(getState() != STATE_RES && getState() != STATE_ERR){
         if(isTimeoutTotal()){
@@ -271,15 +278,24 @@ void LogicControl:: run()
                     default:
                         break;
                     }
-                    
                 }
-                
             }
             break;
         }   
     case STATE_ERR:
-        
+    {
+        uint64_t time = millis();
+        uartSlave.send("A"+ String(STATE_MOVING_TO_RES));
+        while (!isSlaveFinishMoving())
+        {
+            if(millis() - time > 25000){
+                uartSlave.send("A"+ String(STATE_MOVING_TO_RES));
+                time = millis();
+            }
+        }
+        ESP.restart();        
         break;             
+    }
     }
     
 }
@@ -360,7 +376,6 @@ void LogicControl::setState(const State& state){
         }
         if(this->_isFastMeasuring) this->_isFastMeasuring = false;
         std::vector<std::vector<String>> str_data;
-        // if(this->listDataMeasuring.size() > 7) setErrCode(ErrCode::ERR_NUM_OF_LIST_DATA_OUT_OF_RANGE);
         for(DataMeasuring dataMeasuring: this->_listDataMeasuring){
             std::vector<String> element;
             String str_round = String(dataMeasuring.dataSensor._round);
@@ -456,7 +471,7 @@ void LogicControl::setErrMeasuring(const LogicControl::State& state){
 
 bool LogicControl::isSlaveFinishMoving(){
     String data ="";
-#if !BY_PASS_SLAVE
+#if !ENABLE_READ_SLAVE
         return true;
 #else
     if(uartSlave.read(data)){

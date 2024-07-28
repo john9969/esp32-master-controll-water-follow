@@ -92,9 +92,22 @@ void Lcd::run(){
             setCursor(0,3);
             print(data);
             break;
+        case TYPE_OTA:
+            setCursor(0,3);
+            while (data.length() < 20)
+            {
+                data +=" ";
+            }
+            data = "Dang cap nhat du lieu:" + data;    
+            print(data);
+            break;
     }
 }
-
+void Lcd::forceShow(String data, const TYPE& type){
+    (void)type;
+    setCursor(0,3); 
+    print(data);
+}
 void Lcd::show(String data,const TYPE& type, const uint8_t & length){
     if(_listData.size() > MAXIMUM_DATA){
         Serial.println("lcd too much data to show");

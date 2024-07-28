@@ -16,7 +16,7 @@ void DataConfig::notifyAll() {
     }
 }
 DataConfig::DataConfig(String serialNumber,uint8_t freDay,uint8_t freNight, uint8_t dayTime, uint8_t nightTime, uint8_t minuteStart, float multiAdc, float offsetAdc, bool isOnled, float lowerVolThreashold){
-    this->_sn = std::string(serialNumber.c_str());
+    
     this->_freDay = freDay;
     this->_freNight = freNight;
     this->_dayTime = dayTime;
@@ -26,6 +26,8 @@ DataConfig::DataConfig(String serialNumber,uint8_t freDay,uint8_t freNight, uint
     this->_offsetAdc = offsetAdc;
     this->_isOnLed = isOnled;
     this->_lowerVolThreashold = lowerVolThreashold;
+    
+    
 }
 DataConfig* DataConfig::getInstance(String serialNumber,uint8_t freDay, uint8_t freNight, uint8_t dayTime, uint8_t nightTime, uint8_t minuteStart, float multiAdc, float offsetAdc, bool isOnLed, float lowerVolThreashold){
     if(! _instance){
@@ -35,6 +37,11 @@ DataConfig* DataConfig::getInstance(String serialNumber,uint8_t freDay, uint8_t 
 }
 String DataConfig::getSerialNumber(){
     return String(this->_sn.c_str());
+}
+void DataConfig::setSerialNumber(char* serial){
+    this->_sn = "";
+    this->_sn = std::string(serial);
+
 }
 DataConfig* DataConfig::fromString(String input){
     std::string data = std::string(input.c_str());

@@ -1,4 +1,5 @@
 #include "Alarm.h"
+#include "../../app/logicControl/LoginControl.h"
 bool Alarm::isDay(){
     if(_nightTime > _dayTime)
         return (_currentTime.Hour >= _dayTime && _currentTime.Hour < _nightTime) ? true:false;
@@ -6,7 +7,7 @@ bool Alarm::isDay(){
         return (_currentTime.Hour >= _nightTime && _currentTime.Hour < _dayTime) ? false: true;
 }
 Alarm::Alarm(DataConfig* dataConfig) : _dataConfig(dataConfig),_freDay(_dataConfig->getFreDay()),_freNight(_dataConfig->getFreNight()),_dayTime(_dataConfig->getDayTime()),_nightTime(_dataConfig->getNightTime()),_isRinging(false),_totalSecond(0) {
-    this->_timeSecAlarm =TOTAL_TIME_PER_DAY;
+    this->_timeSecAlarm = 99*60 + 23*3600;
     _secondLeft = 3600;
     _minuteLeft = 99;   
     _minuteStart = 55;
@@ -24,15 +25,22 @@ void Alarm::changeAlarm() {
     uint8_t fre = 0;
     if(isDay()){
         fre = this->_freDay;
-        this->_timeSecAlarm = (_freDay-1)*3600 + _minuteStart * 60 - rtc->getMinute()*60 + rtc->getSecondsPoint() - rtc->getSecond() ;
     }
     else {
         fre = this->_freNight;
-        this->_timeSecAlarm = (_freNight-1)*3600 + _minuteStart * 60 + rtc->getSecondsPoint() - rtc->getSecond() - rtc->getMinute()*60 ;
     }   
-    if(_minuteStart <= rtc->getMinute()) this->_timeSecAlarm += 3600;
-    if(this->_timeSecAlarm > TOTAL_TIME_PER_DAY ) this->_timeSecAlarm = this->_timeSecAlarm - TOTAL_TIME_PER_DAY;
-    Serial.println("Reset Alarm, next Time location: "+ String(this->_timeSecAlarm) + ",current sec: "+ Rtc::getInstance()->getSecondsPoint());
+
+    if(_minuteStart > rtc->getMinute()){
+        this->_timeSecAlarm = (fre - 1)*3600 + _minuteStart*60 - rtc->getMinute()*60 -rtc->getSecond()  + rtc->getSecondsPoint();  
+    }
+    else {
+        this->_timeSecAlarm = fre*3600 + _minuteStart*60 - rtc->getMinute()*60 - rtc->getSecond() + rtc->getSecondsPoint();  
+    }
+    Serial.printf(  "Reset Alarm, next Time location:%d,"
+                    "current sec point: %d, remain sec: %d", 
+                    this->_timeSecAlarm, rtc->getSecondsPoint(),
+                    this->_timeSecAlarm- rtc->getSecondsPoint()
+                );
 }
 void Alarm::hasChanged() {
     if((_dataConfig->getFreDay() != this->_freDay) || (_dataConfig->getFreNight() != this->_freNight) ||
@@ -54,16 +62,7 @@ void Alarm::resetAlarm(){
 
 int Alarm::getRemainSecond(){
     Rtc* rtc = Rtc::getInstance();
-    std::shared_ptr<HttpRequest> http = HttpRequest::getInstance();
-    int compareValue = this->_timeSecAlarm - rtc->getSecondsPoint();
-    if(compareValue <  -10){
-        this->_secondLeft = TOTAL_TIME_PER_DAY + compareValue;
-        Serial.println("alarm: next day, use other fomular to caculate secondLeft: "+String(this->_secondLeft));
-    }
-    else {
-        this->_secondLeft = compareValue;
-    }
-    // Serial.println("remain second: " +String(this->_secondLeft));
+    this->_secondLeft = this->_timeSecAlarm - rtc->getSecondsPoint();
     return this->_secondLeft;
 }
 int Alarm::getRemainMinute() {
@@ -72,20 +71,18 @@ int Alarm::getRemainMinute() {
 void Alarm::updateRemainTime(){
     Lcd* lcd = Lcd::getInstance();
     int minuteLeft = getRemainMinute();
-    if(this->_isRinging){
-        lcd->show(String(0),Lcd::TYPE_REMAIN_TIME_ALARM,3);
-        return;
-    }
     if(minuteLeft != this->_minuteLeft){
         this->_minuteLeft  = minuteLeft;
         Serial.println("Alarm->update remain time() minute left: " + String(this->_minuteLeft));
-        if(minuteLeft > 99){
-            lcd->show("99",Lcd::TYPE_REMAIN_TIME_ALARM,3);    
+        if(this->_isRinging){
+            lcd->show(String(0),Lcd::TYPE_REMAIN_TIME_ALARM,3);
+        }
+        else if(minuteLeft > 999){
+            lcd->show("999",Lcd::TYPE_REMAIN_TIME_ALARM,3);    
         }
         else{
             lcd->show(String(minuteLeft),Lcd::TYPE_REMAIN_TIME_ALARM,3);
         }
-    
     }
 }
 bool Alarm::getIsRinging() const {
@@ -93,7 +90,7 @@ bool Alarm::getIsRinging() const {
 }
 
 void Alarm::checked(){
-    this->_isRinging = false;
+    if(this->_isRinging) this->_isRinging = false;
 }
 
 void Alarm::runAlarm() {
@@ -102,29 +99,31 @@ void Alarm::runAlarm() {
     static int coutdownShowLcd = 10;
 
     /** Alarm running*/  
-    if(_isRinging){
-        return;
-    }
+    // if(_isRinging){
+    //     return;
+    // }
     Rtc* rtc = Rtc::getInstance();
     Lcd* lcd = Lcd::getInstance();
     rtc->getTime(_currentTime);
     
-    if(_currentTime.Hour == this->_nightTime){
-        if((_currentTime.Hour == this->_nightTime) 
-            && (_currentTime.Minute == TIME_RESET_MACHINE_POINT) 
-            && (_currentTime.Second == 00)){
-                ESP.restart();
-        }
+    if( (rtc->getHour()     == this->_nightTime)          &&
+        (rtc->getMinute()   == TIME_RESET_MACHINE_POINT)  && 
+        (rtc->getSecond()   == 00)                        &&
+        (!_isRinging)){
+            ESP.restart();
     }
-
-    int delta = _currentTime.Second - lastSec;
+    int delta = rtc->getSecond() - lastSec;
     if(delta == 0) return;
     int remainSecound = getRemainSecond();
-    if(this->_secondLeft == 0){
-        _isRinging = true;
+
+    if(remainSecound <= 0){
+        if(!_isRinging) {
+            _isRinging = true;
+            Serial.println("alarm ring");
+        }
         resetAlarm();
     }
     updateRemainTime();
-    lastSec = _currentTime.Second;
+    lastSec = rtc->getSecond();
 }
 Alarm* Alarm::_alarm= nullptr;

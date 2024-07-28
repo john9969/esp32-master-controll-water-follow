@@ -4,7 +4,7 @@
 #include "../../board/readAdc/readAdc.h"
 #include "../../service/config/Config.h"
 #include "../../service/ota/otaController.h"
-#define SYNC_OTA 5000
+
 class SyncData{
 public:
     void syncErr();

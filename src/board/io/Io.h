@@ -51,6 +51,7 @@ extern "C" {
         ERR_WIFI_1_SIGNAL_WEAK          =30,
         ERR_WIFI_2_LOST_CONNECT         =31,
         ERR_WIFI_2_SIGNAL_WEAK          =32,
+        ERR_EEPROM_ERR                  =33,
         NO_ERR
     };
     typedef enum ERR_CODE_t ErrCode;

@@ -1,5 +1,5 @@
 #include "firmware.h"
-
+#include "../../../board/lcd/Lcd.h"
 Firmware::Firmware(){
   
 }
@@ -24,6 +24,11 @@ int32_t Firmware::isNewFwAvailable(FwInfo& fwInfo){
         Serial.println("fw_size: " + String(fwInfo._totalSize));
         if(fwInfo._fwVersion != VERSION && fwInfo._totalSize > MAXIMUM_FW_LENGTH_SESSION)
         {
+          Lcd* lcd = Lcd::getInstance();
+          lcd->setCursor(0,2);
+          lcd->print("                    ");
+          lcd->setCursor(0,2);
+          lcd->print(fwInfo._fwVersion  + "(" + String(fwInfo._totalSize) + ")B");
           Serial.println("Has fw available \nReset element: ");
           fwInfo._index = 0;
           memset(fwInfo._session.data,0,MAXIMUM_FW_LENGTH_SESSION);
@@ -52,40 +57,36 @@ uint32_t Firmware::getFwSessionSize(FwInfo& fwInfo){
 
 int32_t Firmware::downloadFw(const String& url, uint8_t * image,const uint32_t& index, const uint32_t& length){
   HTTPClient http;
-  //Serial.println("Connecting to server: " + url);
   http.begin(url);    
   http.addHeader("Range", "bytes=" + String(index) + "-" + String(index + length - 1));
   int httpCode = http.GET();
   if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_PARTIAL_CONTENT) {
     int sizeImage = http.getSize();
-    Serial.printf("Fw size: %d", sizeImage);
+    
     if(sizeImage > MAXIMUM_FW_LENGTH_SESSION) {
+      Serial.printf("session fail size image downloaded larger then maximum size of http-stream, size Image downloaded: %d , maximum fw: %d", sizeImage, MAXIMUM_FW_LENGTH_SESSION);
       http.end();
       return -1;
     }
     if(sizeImage < 0) {
+      Serial.printf("session fail, size fw downloaded: %d\n", sizeImage); 
       http.end();
       return -1;
     }
-#if 1
     WiFiClient* stream = http.getStreamPtr();
     int sizeBuff  = stream->available();
     if(sizeImage != sizeBuff) {
-      Serial.printf("stream fail, size image: %d, sizeBuff: %d",sizeImage,sizeBuff);
+      Serial.printf("stream fail, size image diff size buff, size image: %d, sizeBuff: %d",sizeImage,sizeBuff);
       http.end();
       return -1;
     }
-    Serial.printf("is Stream available: %d", sizeImage);
     if(stream->readBytes(image, sizeImage) != sizeImage){
       Serial.println("read byte fail");
       http.end();
       return -1;
     }
-#endif
     http.end();
-    Serial.printf("remain RAM after HTTP: %d ", 100 * esp_get_free_heap_size() / heap_caps_get_total_size(MALLOC_CAP_8BIT));
-    Serial.println("%");
-  return sizeImage;
+    return sizeImage;
   }
   Serial.printf("http fail, code: %d", httpCode);
   http.end();
@@ -93,7 +94,6 @@ int32_t Firmware::downloadFw(const String& url, uint8_t * image,const uint32_t& 
 }
 
 int32_t Firmware::beginWriteImage(const uint32_t & totalSize) {
-  Serial.printf("begin size: %d\n",totalSize);
   return Update.begin(totalSize);
 }
 

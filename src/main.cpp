@@ -1,7 +1,7 @@
 #include "app/syncData/SyncData.h"
 #include "lib/thread/Thread.h"
 #include "lib/thread/ThreadController.h"
-
+#include "board/eeprom/Eeprom.h"
 void callback_logic_control();
 void callback_read_sensor();
 void callback_sync_sensor();
@@ -16,6 +16,7 @@ void callback_connection();
 void callback_http();
 void callback_sync_data();
 void callback_ota();
+void getSerialNumber();
 ThreadController controller = ThreadController();
 LogicControl* logicControl = LogicControl::getInstance();
 ReadSensor* readSensor = ReadSensor::getInstance();
@@ -55,9 +56,9 @@ void setup() {
   threadRtc.setInterval(100);
   threadAlarm.onRun(&callback_alarm);
   threadAlarm.setInterval(100);
-  threadOta.setInterval(SYNC_OTA);
+  threadOta.setInterval(FRE_SYNC_OTA);
   threadOta.onRun(callback_ota);
-  threadResetAlarm->setInterval(3000);
+  threadResetAlarm->setInterval(10000);
   threadResetAlarm->onRun(&callback_resetAlarm);
   threadReadSensor.onRun(&callback_read_sensor);
   threadReadSensor.setInterval(10);
@@ -69,6 +70,8 @@ void setup() {
   ioInit();
   lcd->begin();
   Serial.begin(115200);
+  getSerialNumber();
+  
   connection->init();
   logicControl->init();
   readSensor->init();
@@ -86,6 +89,7 @@ void setup() {
   controller.add(&threadReadSensor);
   controller.add(&threadSyncData);
   controller.add(&threadLogicControl);
+    
 }
 void loop() {
   controller.run();
@@ -120,6 +124,7 @@ void callback_uart(){
 
   if(Serial.available()){
     String data = Serial.readString();
+    data.trim();
     if(data.startsWith("start")){
       hasStartBtn =true;
       Serial.println("start ok");
@@ -129,6 +134,21 @@ void callback_uart(){
     }
     else if (data.startsWith("done measuring")){
       
+    }
+    else if(data.startsWith("get remain")){
+      Serial.printf("remain: %d minute\n", Alarm::getInstance()->getRemainMinute());
+    }
+    else if(data.startsWith("setTime:")){
+      data.remove(0,8);
+      std::vector<String> time;
+      for(int i =0;i <6;i++){
+        time.push_back(data.substring(0,2));
+        data.remove(0, 2);
+      }
+      Time _tm = Time{uint8_t(time.at(0).toInt()),uint8_t(time.at(1).toInt())
+                    ,uint8_t(time.at(2).toInt()),1,uint8_t(time.at(3).toInt()),
+                    uint8_t(time.at(4).toInt()) ,uint8_t(time.at(5).toInt())};
+      Rtc::getInstance()->setTime(_tm);
     }
     else if(data.startsWith("reset alarm")){
       Alarm::getInstance()->resetAlarm();
@@ -157,6 +177,34 @@ void callback_uart(){
     else if(data.startsWith("slave8")){
       uartSlave.send("A8");
     }
+    else if(data.startsWith("serial:")){
+      data.remove(0,7);
+      data.replace("\n","");
+      data.replace("\r","");
+      data.trim();
+      if(data.length() <3) {
+        Serial.printf("Serial wrong: %s\n",data);
+        return;
+      }
+        EEPROM.write(0, data[0]);
+        EEPROM.write(1, data[1]);
+        EEPROM.write(2, data[2]);
+        EEPROM.write(3, '\0'); // Null-terminate the string
+        EEPROM.commit();
+        Serial.println("write success");
+    }
+    else if(data.startsWith("read_serial_eeprom")){
+      char serial[4];
+      for (int i = 0; i < 3; i++)
+      {
+        serial[i]= (EEPROM.read(i));
+      }
+      serial[3] = '\0';
+      Serial.printf("serial: %s", serial); 
+    }
+    else if(data.startsWith("read_serial_config")){
+      Serial.printf("serial: %s\n",DataConfig::getInstance()->getSerialNumber());
+    }
   }
 }
 
@@ -181,4 +229,19 @@ void callback_sync_data(){
 }
 void callback_ota(){
   syncData.syncOta();
+}
+void getSerialNumber(){
+  if(!EEPROM.begin(4)){
+    Serial.println("eeprom can not open");
+  }
+  else {
+    char serial[4] ={0};
+    for (int i = 0; i < 3; i++)
+      {
+        serial[i]= (EEPROM.read(i));
+      }
+      serial[3] = '\0';
+      Serial.printf("set seial: %s",serial);
+      DataConfig::getInstance()->setSerialNumber(serial);
+  }
 }

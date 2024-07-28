@@ -4,6 +4,7 @@
 #include "../readSensor/ReadSensor.h"
 #include "../../service/alarm/Alarm.h"
 #include "../../service/httpRequest/HttpRequest.h"
+
 class LogicControl{
 public:
     enum State{

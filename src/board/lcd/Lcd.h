@@ -33,7 +33,8 @@ public:
         TYPE_COUNT_UP,
         TYPE_ANGLE,
 
-        TYPE_PRIVIOUS_DATA_MEASURING,     
+        TYPE_PRIVIOUS_DATA_MEASURING, 
+        TYPE_OTA    
 
     };
     struct DataElement{
@@ -46,6 +47,7 @@ public:
     void begin();
     static Lcd* getInstance();
     void show(String data,const TYPE& type, const uint8_t& length = 0);
+    void forceShow(String data, const TYPE& type);
     uint32_t getFreLooping();
     void run();
 private:

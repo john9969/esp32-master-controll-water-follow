@@ -4,7 +4,9 @@
 #include <iostream>
 #include "../lcd/Lcd.h"
 #include "../../lib/rtc/DS1307RTC.h"
+#define MAXINUM_UINT32_T 0xFFFFFFFF
 typedef tmElements_t Time;
+typedef unsigned long uLong;
 class Rtc : public DS1307RTC
 {
 private:
@@ -12,12 +14,14 @@ private:
     static Rtc* _rtc;
     uint8_t _lastSec;
     uint8_t _lastDay;
-    uint64_t _totalSecDay =0;
+    uint8_t _lastMinute;
+    uint32_t _totalSecDay;
+    uint32_t _runingDays;
     Time _current;
 public:
     void fromString(String data);
     void run();
-    uint64_t getSecondsPoint();
+    uint32_t getSecondsPoint();
     static Rtc* getInstance();
     void getTime(Time& t);
     uint8_t getSecond();
@@ -25,6 +29,7 @@ public:
     uint8_t getHour();
     int8_t toString(String& data);
     void setTime(Time t);
+    
 };
 
 #endif

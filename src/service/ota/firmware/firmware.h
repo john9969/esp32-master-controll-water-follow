@@ -6,19 +6,10 @@
 #include <Update.h>
 #include "../../../lib/tiny-json/tiny-json.h"
 #include "../../../service/config/Config.h"
+#include "../../../board/lcd/Lcd.h"
 
-#if !TEST_NEW_FW 
-#define API_GET_FW_IMAGE  "https://raw.githubusercontent.com/john9969/ota_server/master/firmware.bin"
-#define API_GET_FW_INFO   "https://raw.githubusercontent.com/john9969/ota_server/master/fw_status.txt"
-#define API_GET_TEST_FILE "https://raw.githubusercontent.com/john9969/ota_server/master/test.txt"
-#else
-#define API_GET_FW_IMAGE  "https://raw.githubusercontent.com/john9969/ota_server/dev/firmware.bin"
-#define API_GET_FW_INFO   "https://raw.githubusercontent.com/john9969/ota_server/dev/fw_status.txt"
-#define API_GET_TEST_FILE "https://raw.githubusercontent.com/john9969/ota_server/dev/test.txt"
-#endif
 
-#define MAXIMUM_FW_LENGTH_SESSION 1024
-#define MAXIMUM_FW_INFO 20
+
 struct FwSession
 {
   int32_t _size;
