@@ -138,7 +138,7 @@ void LogicControl:: run()
                 uint16_t round = this->_readSensor->readRound();
                 if(round <=0) break; 
                 this->_dataMeasuring.dataSensor._round+= round;
-                this->_lcd->show(String(this->_dataMeasuring.dataSensor._round),Lcd::TYPE_ROUND,3);
+                this->_lcd->show(String(this->_dataMeasuring.dataSensor._round/5),Lcd::TYPE_ROUND,3);
                 this->_lcd->show(String(this->_readSensor->readAngle()), Lcd::TYPE_ANGLE,3);
                 if((this->_dataMeasuring.dataSensor._round % 5) != 0){
                     setOnSpeaker(300);
@@ -154,7 +154,7 @@ void LogicControl:: run()
                 uint16_t round = this->_readSensor->readRound();
                 if(round > 0){
                     this->_dataMeasuring.dataSensor._round+= round;
-                    this->_lcd->show(String(this->_dataMeasuring.dataSensor._round),Lcd::TYPE_ROUND,3);
+                    this->_lcd->show(String(this->_dataMeasuring.dataSensor._round/5),Lcd::TYPE_ROUND,3);
                     this->_lcd->show(String(this->_readSensor->readAngle()), Lcd::TYPE_ANGLE,3);
                     Serial.println("angle: " + String(this->_readSensor->readAngle()));
                     if((this->_dataMeasuring.dataSensor._round % 5) != 0) {
@@ -378,7 +378,7 @@ void LogicControl::setState(const State& state){
         std::vector<std::vector<String>> str_data;
         for(DataMeasuring dataMeasuring: this->_listDataMeasuring){
             std::vector<String> element;
-            String str_round = String(dataMeasuring.dataSensor._round);
+            String str_round = String(dataMeasuring.dataSensor._round/5);
             padLeft(str_round,3);
             String str_angle = String(dataMeasuring.dataSensor._angle);
             padLeft(str_angle,3);

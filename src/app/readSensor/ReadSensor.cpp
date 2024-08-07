@@ -67,7 +67,7 @@ void ReadSensor::process3Wire(){
         _isLedOn = false;
     }
     if(signalSensor3Wire){
-        this->_dataSensor._round++;
+        this->_dataSensor._round = this->_dataSensor._round + 5;;
         _isLedOn = true;
         Serial.println("round: "+ String(_dataSensor._round));
         setHigh(LED_SIGNAL);
