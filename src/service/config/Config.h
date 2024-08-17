@@ -6,7 +6,7 @@
 #include <string>
 #include <EEPROM.h>
 #define DEBUG 0
-#define SPEAKER_ENABLE 0
+#define SPEAKER_ENABLE 1
 #define BTN_ENABLE 1
 #define ENABLE_READ_SLAVE 1
 #define SYNC_TIME_ONLINE 1
@@ -15,10 +15,10 @@
 
 #define ADDRESS_SERIAL_NUMBER 0
 #define EEPROM_WRITE_LENGTH 10
-// #define WIFI_ID_1     "Thuyen2"
-// #define WIFI_PASS_1   "0363862128"
-#define WIFI_ID_1     "LOFI 108 LTN T4"
-#define WIFI_PASS_1   "camonquykhach"
+#define WIFI_ID_1     "Thuyen2"
+#define WIFI_PASS_1   "0363862128"
+// #define WIFI_ID_1     "LOFI 108 LTN T4"
+// #define WIFI_PASS_1   "camonquykhach"
 
 #define WIFI_ID_2     "Minh Tuan"
 #define WIFI_PASS_2   "j12345678"
